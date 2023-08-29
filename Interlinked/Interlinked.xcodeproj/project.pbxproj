@@ -71,7 +71,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		89046D952A9CECC40096D400 /* InterlinkedCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = InterlinkedCore; path = ../InterlinkedCore; sourceTree = "<group>"; };
 		895FF1C02A9CE234007D2B45 /* Interlinked.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = Interlinked.entitlements; sourceTree = "<group>"; };
 		895FF1C12A9CE234007D2B45 /* RoundedBorderTextView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoundedBorderTextView.swift; sourceTree = "<group>"; };
 		895FF1C22A9CE234007D2B45 /* AppView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
@@ -113,14 +112,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		89046D942A9CECC40096D400 /* Packages */ = {
-			isa = PBXGroup;
-			children = (
-				89046D952A9CECC40096D400 /* InterlinkedCore */,
-			);
-			name = Packages;
-			sourceTree = "<group>";
-		};
 		895FF1BF2A9CE234007D2B45 /* Interlinked */ = {
 			isa = PBXGroup;
 			children = (
@@ -150,7 +141,6 @@
 		89AFD9032A13DEAA0055B2CB = {
 			isa = PBXGroup;
 			children = (
-				89046D942A9CECC40096D400 /* Packages */,
 				895FF1BF2A9CE234007D2B45 /* Interlinked */,
 				895FF1F52A9CE455007D2B45 /* InterlinkedExtension */,
 				89AFD93F2A13E0AE0055B2CB /* Frameworks */,
