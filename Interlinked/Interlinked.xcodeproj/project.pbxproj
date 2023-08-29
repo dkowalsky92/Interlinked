@@ -84,6 +84,7 @@
 		895FF1F82A9CE455007D2B45 /* InterlinkCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterlinkCommand.swift; sourceTree = "<group>"; };
 		895FF1FA2A9CE455007D2B45 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		895FF1FB2A9CE455007D2B45 /* InterlinkedExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = InterlinkedExtension.entitlements; sourceTree = "<group>"; };
+		898E58442A9E5EF7000DF9B2 /* InterlinkedCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = InterlinkedCore; path = ../InterlinkedCore; sourceTree = "<group>"; };
 		89AFD90C2A13DEAA0055B2CB /* Interlinked.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Interlinked.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		89AFD9402A13E0AE0055B2CB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		89AFD9422A13E0AE0055B2CB /* XcodeKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XcodeKit.framework; path = Library/Frameworks/XcodeKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -138,9 +139,18 @@
 			path = InterlinkedExtension;
 			sourceTree = "<group>";
 		};
+		898E58432A9E5EF7000DF9B2 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				898E58442A9E5EF7000DF9B2 /* InterlinkedCore */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
 		89AFD9032A13DEAA0055B2CB = {
 			isa = PBXGroup;
 			children = (
+				898E58432A9E5EF7000DF9B2 /* Packages */,
 				895FF1BF2A9CE234007D2B45 /* Interlinked */,
 				895FF1F52A9CE455007D2B45 /* InterlinkedExtension */,
 				89AFD93F2A13E0AE0055B2CB /* Frameworks */,
@@ -329,6 +339,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.dkowalsky92.Interlinked.InterlinkedExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -358,6 +369,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.dkowalsky92.Interlinked.InterlinkedExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

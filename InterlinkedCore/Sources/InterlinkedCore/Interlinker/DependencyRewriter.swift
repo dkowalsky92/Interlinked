@@ -9,6 +9,8 @@ import Foundation
 import SwiftSyntaxBuilder
 import SwiftSyntax
 import InterlinkedShared
+import OSLog
+
 
 class DependencyRewriter: SyntaxRewriter {
     private let configuration: Configuration
@@ -150,12 +152,19 @@ class DependencyRewriter: SyntaxRewriter {
                 fromCodeBlockItems: initializer.body?.statements ?? CodeBlockItemList([])
             )
         )
+        print("asdasdasdDICK")
+        Logger.standard.debug("Initial:\n\(definitions.debugDescription)")
         definitions = unusedAssignmentRemover.removeUnusedAssignments(definitions: definitions)
+        Logger.standard.debug("After assignments removal:\n\(definitions.debugDescription)")
         definitions = unusedDeclarationRemover.removeUnusedDeclarations(definitions: definitions)
+        Logger.standard.debug("After declarations removal:\n\(definitions.debugDescription)")
         definitions = unusedParameterRemover.removeUnusedParameters(definitions: definitions)
+        Logger.standard.debug("After parameters removal:\n\(definitions.debugDescription)")
         definitions = missingParameterAndAssignmentInjector.injectMissingParametersAndAssignments(definitions: definitions)
+        Logger.standard.debug("After parameter and assignment injection:\n\(definitions.debugDescription)")
         if configuration.enableSorting {
             definitions = dependencySorter.sortDependencies(definitions: definitions)
+            Logger.standard.debug("After sorting:\n\(definitions.debugDescription)")
         }
         return makeInitializer(existingInitializer: initializer, definitions: definitions)
     }
