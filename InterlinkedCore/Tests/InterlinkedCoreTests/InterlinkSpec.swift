@@ -78,7 +78,7 @@ final class InterlinkSpec: XCTestCase {
             let sut = Interlink(configuration: testCase.configuration)
             do {
                 let output = try sut.interlink(input: testCase.input)
-                XCTAssertEqual(output, testCase.expectedOutput)
+                XCTAssertEqual(output, testCase.expectedOutput, testCase.context)
             } catch {
                 XCTFail(error.localizedDescription)
             }
@@ -134,7 +134,7 @@ final class InterlinkSpec: XCTestCase {
             let sut = Interlink(configuration: testCase.configuration)
             do {
                 let output = try sut.interlink(input: testCase.input)
-                XCTAssertEqual(output, testCase.expectedOutput)
+                XCTAssertEqual(output, testCase.expectedOutput, testCase.context)
             } catch {
                 XCTFail(error.localizedDescription)
             }
@@ -311,7 +311,7 @@ final class InterlinkSpec: XCTestCase {
             let sut = Interlink(configuration: testCase.configuration)
             do {
                 let output = try sut.interlink(input: testCase.input)
-                XCTAssertEqual(output, testCase.expectedOutput)
+                XCTAssertEqual(output, testCase.expectedOutput, testCase.context)
             } catch {
                 XCTFail(error.localizedDescription)
             }
@@ -403,7 +403,7 @@ final class InterlinkSpec: XCTestCase {
             let sut = Interlink(configuration: testCase.configuration)
             do {
                 let output = try sut.interlink(input: testCase.input)
-                XCTAssertEqual(output, testCase.expectedOutput)
+                XCTAssertEqual(output, testCase.expectedOutput, testCase.context)
             } catch {
                 XCTFail(error.localizedDescription)
             }
@@ -507,7 +507,7 @@ final class InterlinkSpec: XCTestCase {
             let sut = Interlink(configuration: testCase.configuration)
             do {
                 let output = try sut.interlink(input: testCase.input)
-                XCTAssertEqual(output, testCase.expectedOutput)
+                XCTAssertEqual(output, testCase.expectedOutput, testCase.context)
             } catch {
                 XCTFail(error.localizedDescription)
             }
@@ -575,7 +575,7 @@ final class InterlinkSpec: XCTestCase {
             let sut = Interlink(configuration: testCase.configuration)
             do {
                 let output = try sut.interlink(input: testCase.input)
-                XCTAssertEqual(output, testCase.expectedOutput)
+                XCTAssertEqual(output, testCase.expectedOutput, testCase.context)
             } catch {
                 XCTFail(error.localizedDescription)
             }
@@ -713,7 +713,7 @@ final class InterlinkSpec: XCTestCase {
             let sut = Interlink(configuration: testCase.configuration)
             do {
                 let output = try sut.interlink(input: testCase.input)
-                XCTAssertEqual(output, testCase.expectedOutput)
+                XCTAssertEqual(output, testCase.expectedOutput, testCase.context)
             } catch {
                 XCTFail(error.localizedDescription)
             }

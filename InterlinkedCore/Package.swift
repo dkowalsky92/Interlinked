@@ -11,8 +11,8 @@ let package = Package(
         .library(name: "InterlinkedShared", targets: ["InterlinkedShared"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-syntax", from: .init(stringLiteral: "508.0.0")),
-        .package(url: "https://github.com/davecom/SwiftGraph", from: .init(stringLiteral: "3.1.0")),
+        .package(url: "https://github.com/apple/swift-syntax", .upToNextMinor(from: "508.0.0")),
+        .package(url: "https://github.com/davecom/SwiftGraph", .upToNextMinor(from: "3.1.0")),
     ],
     targets: [
         .target(name: "InterlinkedShared"),
