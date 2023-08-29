@@ -150,9 +150,9 @@ class DependencyRewriter: SyntaxRewriter {
                 fromCodeBlockItems: initializer.body?.statements ?? CodeBlockItemList([])
             )
         )
-        definitions = unusedParameterRemover.removeUnusedParameters(definitions: definitions)
         definitions = unusedAssignmentRemover.removeUnusedAssignments(definitions: definitions)
         definitions = unusedDeclarationRemover.removeUnusedDeclarations(definitions: definitions)
+        definitions = unusedParameterRemover.removeUnusedParameters(definitions: definitions)
         definitions = missingParameterAndAssignmentInjector.injectMissingParametersAndAssignments(definitions: definitions)
         if configuration.enableSorting {
             definitions = dependencySorter.sortDependencies(definitions: definitions)
