@@ -1,6 +1,6 @@
 //
-//  SourceEditorCommand.swift
-//  InterlinkedExtension
+//  InterlinkCommand.swift
+//  Interlinked
 //
 //  Created by Dominik Kowalski on 28/08/2023.
 //

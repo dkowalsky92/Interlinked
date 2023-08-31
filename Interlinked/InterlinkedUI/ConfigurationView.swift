@@ -1,6 +1,6 @@
 //
 //  ConfigurationView.swift
-//  Interlinked
+//  InterlinkedUI
 //
 //  Created by Dominik Kowalski on 23/05/2023.
 //
@@ -19,22 +19,28 @@ struct ConfigurationView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Interlinked")
-                .foregroundColor(.secondary)
-                .font(.system(.body, weight: .regular))
-            Divider()
-            maxLineLengthView
-            enableSortingView
-            formatterStyleSelectionView
-            Divider()
-            terminateView
-        }
-        .contentShape(Rectangle())
-        .padding(12)
-        .cornerRadius(10)
-        .onTapGesture {
-            textFieldFocused = false
+        ScrollViewReader { proxy in
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Interlinked")
+                    .foregroundColor(.secondary)
+                    .font(.system(.body, weight: .regular))
+                Divider()
+                maxLineLengthView
+                enableSortingView
+                formatterStyleSelectionView(proxy: proxy)
+                Divider()
+                terminateView
+            }
+            .contentShape(Rectangle())
+            .padding(12)
+            .cornerRadius(10)
+            .onTapGesture {
+                textFieldFocused = false
+            }
+            .onAppear {
+                textFieldFocused = false
+                proxy.scrollTo(viewModel.formatterStyle.id, anchor: .center)
+            }
         }
     }
     
@@ -67,9 +73,6 @@ struct ConfigurationView: View {
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .multilineTextAlignment(.trailing)
                 .fixedSize()
-                .onAppear {
-                    textFieldFocused = false
-                }
                 
                 Stepper("", value: $viewModel.maxLineLength, in: viewModel.maxLineLengthRange)
                     .fixedSize()
@@ -94,30 +97,28 @@ struct ConfigurationView: View {
         }
     }
     
-    private var formatterStyleSelectionView: some View {
-        ScrollViewReader { proxy in
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack {
-                    ForEach(viewModel.formatterStyles) { item in
-                        RoundedBorderTextView(
-                            content: item.content,
-                            description: item.description,
-                            selected: Binding(
-                                get: {
-                                    item == viewModel.formatterStyle
-                                },
-                                set: { _ in
-                                    viewModel.formatterStyle = item
-                                    withAnimation(.linear(duration: 0.2)) {
-                                        proxy.scrollTo(item.id, anchor: .center)
-                                    }
+    private func formatterStyleSelectionView(proxy: ScrollViewProxy) -> some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack {
+                ForEach(viewModel.formatterStyles) { item in
+                    RoundedBorderTextView(
+                        content: item.content,
+                        description: item.description,
+                        selected: Binding(
+                            get: {
+                                item == viewModel.formatterStyle
+                            },
+                            set: { _ in
+                                viewModel.formatterStyle = item
+                                withAnimation(.linear(duration: 0.2)) {
+                                    proxy.scrollTo(item.id, anchor: .center)
                                 }
-                            )
+                            }
                         )
-                    }
+                    )
                 }
-                .padding(.horizontal, 175 / CGFloat(viewModel.formatterStyles.count))
             }
+            .padding(.horizontal, 175 / CGFloat(viewModel.formatterStyles.count))
         }
     }
     

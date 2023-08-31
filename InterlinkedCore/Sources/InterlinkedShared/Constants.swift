@@ -8,5 +8,5 @@
 import Foundation
 
 public enum Constants {
-    public static let userDefaultsSuiteName = "group.com.dkowalsky92.Interlinked"
+    public static let userDefaultsSuiteName = "group.58P33W8533.com.dkowalsky92.Interlinked"
 }

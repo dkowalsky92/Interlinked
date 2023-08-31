@@ -1,6 +1,6 @@
 //
-//  Interlinked.swift
-//  Interlinked
+//  InterlinkedUI.swift
+//  InterlinkedUI
 //
 //  Created by Dominik Kowalski on 27/04/2023.
 //
@@ -12,7 +12,7 @@ struct AppView: App {
     private let appViewModel = AppViewModel()
     
     var body: some Scene {
-        MenuBarExtra("Interlinked", systemImage: "chart.bar.doc.horizontal") {
+        MenuBarExtra("InterlinkedUI", systemImage: "chart.bar.doc.horizontal") {
             ConfigurationView(viewModel: appViewModel.configurationViewModel)
         }
         .windowResizability(.contentSize)

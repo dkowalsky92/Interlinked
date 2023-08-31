@@ -989,368 +989,368 @@ final class InterlinkSpec: XCTestCase {
 
     func testMiscellaneous() {
         let testCases: [TestCase] = [
-//            .init(
-//                context: "has 1 nested member, nested init with incorrect parameter and assignment, nested optional variable",
-//                input: """
-//                class Test {
-//                    struct NestTest {
-//                        var optionalString: String?
-//                        var forcedUnwrapString: String!
-//
-//                        init(optionalLet: (() -> Void)?) {
-//                            self.optionalLet = optionalLet
-//                        }
-//                    }
-//
-//                    var optionalString: String?
-//
-//                    init(optionalLet: (() -> Void)?) {
-//                        self.optionalLet = optionalLet
-//                    }
-//                }
-//                """,
-//                expectedOutput: """
-//                class Test {
-//                    struct NestTest {
-//                        var optionalString: String?
-//                        var forcedUnwrapString: String!
-//                    }
-//
-//                    var optionalString: String?
-//                }
-//                """
-//            ),
-//            .init(
-//                context: "has 2 members, one with nested member, another with incorrect init",
-//                input: """
-//                class Test {
-//                    var optionalString: String?
-//
-//                    init(
-//                        dep1: Int?,
-//                        dep2: String??,
-//                        dep0: (() -> Void)?,
-//                    ) {
-//                        self.random = random
-//                    }
-//
-//                    struct NestTest {
-//                        private let dep1: Int?
-//                        var forcedUnwrapString: String!
-//                        open var dep3: String?
-//                    }
-//                }
-//
-//                struct Test2 {
-//                    private let string: String?
-//
-//                    init(optionalLet: (() -> Void)?) {
-//                        self.optionalLet = optionalLet
-//                    }
-//                }
-//                """,
-//                expectedOutput: """
-//                class Test {
-//                    var optionalString: String?
-//
-//                    struct NestTest {
-//                        private let dep1: Int?
-//                        var forcedUnwrapString: String!
-//                        open var dep3: String?
-//
-//                        init(dep1: Int?) {
-//                            self.dep1 = dep1
-//                        }
-//                    }
-//                }
-//
-//                struct Test2 {
-//                    private let string: String?
-//
-//                    init(string: String?) {
-//                        self.string = string
-//                    }
-//                }
-//                """
-//            ),
-//            .init(
-//                context: "has multiple members, with various configurations",
-//                input: """
-//                class Test {
-//                    var optionalString: String?
-//
-//                    init(
-//                        dep1: Int?,
-//                        dep2: String??,
-//                        dep0: (() -> Void)?,
-//                    ) {
-//                        self.random = random
-//                    }
-//
-//                    struct NestTest {
-//                        private let dep1: Int?
-//                        var forcedUnwrapString: String!
-//                        open var dep3: String?
-//                    }
-//                }
-//
-//                struct Test2 {
-//                    private let string: String?
-//
-//                    init(optionalLet: (() -> Void)?) {
-//                        self.optionalLet = optionalLet
-//                    }
-//                }
-//
-//                actor Test3 {
-//
-//                    init(optionalLet: (() -> Void)?) {
-//                        self.optionalLet = optionalLet
-//                    }
-//
-//                    private struct NestTest {
-//
-//                        private let dep1: String
-//
-//                        private class NestNestTest {
-//                            private var dep1: Int
-//                        }
-//
-//                        init(dep2: String) {
-//                            self.dep2 = dep2
-//                            configure()
-//                        }
-//                    }
-//                }
-//                """,
-//                expectedOutput: """
-//                class Test {
-//                    var optionalString: String?
-//
-//                    struct NestTest {
-//                        private let dep1: Int?
-//                        var forcedUnwrapString: String!
-//                        open var dep3: String?
-//
-//                        init(dep1: Int?) {
-//                            self.dep1 = dep1
-//                        }
-//                    }
-//                }
-//
-//                struct Test2 {
-//                    private let string: String?
-//
-//                    init(string: String?) {
-//                        self.string = string
-//                    }
-//                }
-//
-//                actor Test3 {
-//
-//                    private struct NestTest {
-//
-//                        private let dep1: String
-//
-//                        private class NestNestTest {
-//                            private var dep1: Int
-//
-//                            init(dep1: Int) {
-//                                self.dep1 = dep1
-//                            }
-//                        }
-//
-//                        init(dep1: String) {
-//                            self.dep1 = dep1
-//                            configure()
-//                        }
-//                    }
-//                }
-//                """
-//            ),
-//
-//            .init(
-//                context: "has custom code while loop that modifies a local variable",
-//                input: """
-//                class Test {
-//                    let newVal: String
-//
-//                    init(newVal: String, computed: String) {
-//                        var computed = ""
-//                        var idx = 0
-//                        while idx < 10 && computed.count < 10 {
-//                            idx += 1
-//                            computed += "\\(idx),"
-//                        }
-//                        self.newVal = newVal + computed
-//                        struct Test {
-//
-//                        }
-//                    }
-//                }
-//                """,
-//                expectedOutput: """
-//                class Test {
-//                    let newVal: String
-//
-//                    init(newVal: String) {
-//                        var computed = ""
-//                        var idx = 0
-//                        while idx < 10 && computed.count < 10 {
-//                            idx += 1
-//                            computed += "\\(idx),"
-//                        }
-//                        self.newVal = newVal + computed
-//                    }
-//                }
-//                """
-//            ),
-//            .init(
-//                context: "has multiple computed values & functions",
-//                input: """
-//                class Test {
-//                    var dependency1: String
-//                    private let dep2: Int
-//
-//                    init(valuer1: Int, valuer2: Int, computer1: String, computer2: String) {
-//                        struct Model {
-//                            let val: String
-//                        }
-//                        let val = ""
-//                        let computedValue = "\\(computer1) + \\(computer2)"
-//                        self.dependency1 = computedValue
-//                        func dependencyCompute(valuer1: Int, valuer2: Int) -> Int {
-//                            return valuer1 + valuer2
-//                        }
-//                        self.dep2 = dependencyCompute(valuer1: Model(val: "\\(valuer1)").val, valuer2: valuer2)
-//                    }
-//                }
-//                """,
-//                expectedOutput: """
-//                class Test {
-//                    var dependency1: String
-//                    private let dep2: Int
-//
-//                    init(computer1: String, computer2: String, valuer1: Int, valuer2: Int) {
-//                        let computedValue = "\\(computer1) + \\(computer2)"
-//                        self.dependency1 = computedValue
-//                        struct Model {
-//                            let val: String
-//
-//                            init(val: String) {
-//                                self.val = val
-//                            }
-//                        }
-//                        func dependencyCompute(valuer1: Int, valuer2: Int) -> Int {
-//                            return valuer1 + valuer2
-//                        }
-//                        self.dep2 = dependencyCompute(valuer1: Model(val: "\\(valuer1)").val, valuer2: valuer2)
-//                    }
-//                }
-//                """
-//            ),
-//            .init(
-//                context: "has local variable that gets mutated in a conditional statement",
-//                input: """
-//                struct Test {
-//                    typealias Closure = () -> String
-//
-//                    fileprivate let clos: Closure
-//                    let value: String
-//
-//                    init(clos: @escaping Closure, value: String) {
-//                        print("lolol")
-//                        self.clos = clos
-//                        var valuer = value
-//                        if valuer == "" {
-//                            valuer = "Margo"
-//                        }
-//                        self.value = valuer
-//                        print("lolol")
-//                        print("lolol")
-//                    }
-//                }
-//                """,
-//                expectedOutput: """
-//                struct Test {
-//                    typealias Closure = () -> String
-//
-//                    fileprivate let clos: Closure
-//                    let value: String
-//
-//                    init(clos: @escaping Closure, value: String) {
-//                        print("lolol")
-//                        self.clos = clos
-//                        var valuer = value
-//                        if valuer == "" {
-//                            valuer = "Margo"
-//                        }
-//                        self.value = valuer
-//                        print("lolol")
-//                        print("lolol")
-//                    }
-//                }
-//                """
-//            ),
-//            .init(
-//                context: "test",
-//                input: """
-//                struct Test {
-//                    typealias Closure = () -> String
-//                    let val: String
-//                    let computer: (() -> String)?
-//                    init(val2: String, computer: (() -> String)?) {
-//                        let lol = ""
-//                        print("asdasd")
-//                        func val(lol: String) -> String {
-//                            computer?() ?? ""
-//                        }
-//                        self.val = val(lol: val2)
-//                        self.computer = computer
-//                    }
-//                }
-//                """,
-//                expectedOutput: """
-//                struct Test {
-//                    typealias Closure = () -> String
-//                    let val: String
-//                    let computer: (() -> String)?
-//                    init(val2: String, computer: (() -> String)?) {
-//                        print("asdasd")
-//                        func val(lol: String) -> String {
-//                            computer?() ?? ""
-//                        }
-//                        self.val = val(lol: val2)
-//                        self.computer = computer
-//                    }
-//                }
-//                """
-//            ),
-//            .init(
-//                context: "has custom code at the end",
-//                input: """
-//                private struct NestTest {
-//                    private let dep1: String
-//
-//                    init(dep2: String) {
-//                        self.dep2 = dep2
-//                        configure()
-//                    }
-//                }
-//                """,
-//                expectedOutput: """
-//                private struct NestTest {
-//                    private let dep1: String
-//
-//                    init(dep1: String) {
-//                        self.dep1 = dep1
-//                        configure()
-//                    }
-//                }
-//                """
-//            ),
+            .init(
+                context: "has 1 nested member, nested init with incorrect parameter and assignment, nested optional variable",
+                input: """
+                class Test {
+                    struct NestTest {
+                        var optionalString: String?
+                        var forcedUnwrapString: String!
+
+                        init(optionalLet: (() -> Void)?) {
+                            self.optionalLet = optionalLet
+                        }
+                    }
+
+                    var optionalString: String?
+
+                    init(optionalLet: (() -> Void)?) {
+                        self.optionalLet = optionalLet
+                    }
+                }
+                """,
+                expectedOutput: """
+                class Test {
+                    struct NestTest {
+                        var optionalString: String?
+                        var forcedUnwrapString: String!
+                    }
+
+                    var optionalString: String?
+                }
+                """
+            ),
+            .init(
+                context: "has 2 members, one with nested member, another with incorrect init",
+                input: """
+                class Test {
+                    var optionalString: String?
+
+                    init(
+                        dep1: Int?,
+                        dep2: String??,
+                        dep0: (() -> Void)?,
+                    ) {
+                        self.random = random
+                    }
+
+                    struct NestTest {
+                        private let dep1: Int?
+                        var forcedUnwrapString: String!
+                        open var dep3: String?
+                    }
+                }
+
+                struct Test2 {
+                    private let string: String?
+
+                    init(optionalLet: (() -> Void)?) {
+                        self.optionalLet = optionalLet
+                    }
+                }
+                """,
+                expectedOutput: """
+                class Test {
+                    var optionalString: String?
+
+                    struct NestTest {
+                        private let dep1: Int?
+                        var forcedUnwrapString: String!
+                        open var dep3: String?
+
+                        init(dep1: Int?) {
+                            self.dep1 = dep1
+                        }
+                    }
+                }
+
+                struct Test2 {
+                    private let string: String?
+
+                    init(string: String?) {
+                        self.string = string
+                    }
+                }
+                """
+            ),
+            .init(
+                context: "has multiple members, with various configurations",
+                input: """
+                class Test {
+                    var optionalString: String?
+
+                    init(
+                        dep1: Int?,
+                        dep2: String??,
+                        dep0: (() -> Void)?,
+                    ) {
+                        self.random = random
+                    }
+
+                    struct NestTest {
+                        private let dep1: Int?
+                        var forcedUnwrapString: String!
+                        open var dep3: String?
+                    }
+                }
+
+                struct Test2 {
+                    private let string: String?
+
+                    init(optionalLet: (() -> Void)?) {
+                        self.optionalLet = optionalLet
+                    }
+                }
+
+                actor Test3 {
+
+                    init(optionalLet: (() -> Void)?) {
+                        self.optionalLet = optionalLet
+                    }
+
+                    private struct NestTest {
+
+                        private let dep1: String
+
+                        private class NestNestTest {
+                            private var dep1: Int
+                        }
+
+                        init(dep2: String) {
+                            self.dep2 = dep2
+                            configure()
+                        }
+                    }
+                }
+                """,
+                expectedOutput: """
+                class Test {
+                    var optionalString: String?
+
+                    struct NestTest {
+                        private let dep1: Int?
+                        var forcedUnwrapString: String!
+                        open var dep3: String?
+
+                        init(dep1: Int?) {
+                            self.dep1 = dep1
+                        }
+                    }
+                }
+
+                struct Test2 {
+                    private let string: String?
+
+                    init(string: String?) {
+                        self.string = string
+                    }
+                }
+
+                actor Test3 {
+
+                    private struct NestTest {
+
+                        private let dep1: String
+
+                        private class NestNestTest {
+                            private var dep1: Int
+
+                            init(dep1: Int) {
+                                self.dep1 = dep1
+                            }
+                        }
+
+                        init(dep1: String) {
+                            self.dep1 = dep1
+                            configure()
+                        }
+                    }
+                }
+                """
+            ),
+
+            .init(
+                context: "has custom code while loop that modifies a local variable",
+                input: """
+                class Test {
+                    let newVal: String
+
+                    init(newVal: String, computed: String) {
+                        var computed = ""
+                        var idx = 0
+                        while idx < 10 && computed.count < 10 {
+                            idx += 1
+                            computed += "\\(idx),"
+                        }
+                        self.newVal = newVal + computed
+                        struct Test {
+
+                        }
+                    }
+                }
+                """,
+                expectedOutput: """
+                class Test {
+                    let newVal: String
+
+                    init(newVal: String) {
+                        var computed = ""
+                        var idx = 0
+                        while idx < 10 && computed.count < 10 {
+                            idx += 1
+                            computed += "\\(idx),"
+                        }
+                        self.newVal = newVal + computed
+                    }
+                }
+                """
+            ),
+            .init(
+                context: "has multiple computed values & functions",
+                input: """
+                class Test {
+                    var dependency1: String
+                    private let dep2: Int
+
+                    init(valuer1: Int, valuer2: Int, computer1: String, computer2: String) {
+                        struct Model {
+                            let val: String
+                        }
+                        let val = ""
+                        let computedValue = "\\(computer1) + \\(computer2)"
+                        self.dependency1 = computedValue
+                        func dependencyCompute(valuer1: Int, valuer2: Int) -> Int {
+                            return valuer1 + valuer2
+                        }
+                        self.dep2 = dependencyCompute(valuer1: Model(val: "\\(valuer1)").val, valuer2: valuer2)
+                    }
+                }
+                """,
+                expectedOutput: """
+                class Test {
+                    var dependency1: String
+                    private let dep2: Int
+
+                    init(computer1: String, computer2: String, valuer1: Int, valuer2: Int) {
+                        let computedValue = "\\(computer1) + \\(computer2)"
+                        self.dependency1 = computedValue
+                        struct Model {
+                            let val: String
+
+                            init(val: String) {
+                                self.val = val
+                            }
+                        }
+                        func dependencyCompute(valuer1: Int, valuer2: Int) -> Int {
+                            return valuer1 + valuer2
+                        }
+                        self.dep2 = dependencyCompute(valuer1: Model(val: "\\(valuer1)").val, valuer2: valuer2)
+                    }
+                }
+                """
+            ),
+            .init(
+                context: "has local variable that gets mutated in a conditional statement",
+                input: """
+                struct Test {
+                    typealias Closure = () -> String
+
+                    fileprivate let clos: Closure
+                    let value: String
+
+                    init(clos: @escaping Closure, value: String) {
+                        print("lolol")
+                        self.clos = clos
+                        var valuer = value
+                        if valuer == "" {
+                            valuer = "Margo"
+                        }
+                        self.value = valuer
+                        print("lolol")
+                        print("lolol")
+                    }
+                }
+                """,
+                expectedOutput: """
+                struct Test {
+                    typealias Closure = () -> String
+
+                    fileprivate let clos: Closure
+                    let value: String
+
+                    init(clos: @escaping Closure, value: String) {
+                        print("lolol")
+                        self.clos = clos
+                        var valuer = value
+                        if valuer == "" {
+                            valuer = "Margo"
+                        }
+                        self.value = valuer
+                        print("lolol")
+                        print("lolol")
+                    }
+                }
+                """
+            ),
+            .init(
+                context: "test",
+                input: """
+                struct Test {
+                    typealias Closure = () -> String
+                    let val: String
+                    let computer: (() -> String)?
+                    init(val2: String, computer: (() -> String)?) {
+                        let lol = ""
+                        print("asdasd")
+                        func val(lol: String) -> String {
+                            computer?() ?? ""
+                        }
+                        self.val = val(lol: val2)
+                        self.computer = computer
+                    }
+                }
+                """,
+                expectedOutput: """
+                struct Test {
+                    typealias Closure = () -> String
+                    let val: String
+                    let computer: (() -> String)?
+                    init(val2: String, computer: (() -> String)?) {
+                        print("asdasd")
+                        func val(lol: String) -> String {
+                            computer?() ?? ""
+                        }
+                        self.val = val(lol: val2)
+                        self.computer = computer
+                    }
+                }
+                """
+            ),
             .init(
                 context: "has custom code at the end",
+                input: """
+                private struct NestTest {
+                    private let dep1: String
+
+                    init(dep2: String) {
+                        self.dep2 = dep2
+                        configure()
+                    }
+                }
+                """,
+                expectedOutput: """
+                private struct NestTest {
+                    private let dep1: String
+
+                    init(dep1: String) {
+                        self.dep1 = dep1
+                        configure()
+                    }
+                }
+                """
+            ),
+            .init(
+                context: "has unused assignments that use soon-to-be unused variables and declarations",
                 input: """
                 private struct Test {
                     private let storedLet: String
@@ -1365,11 +1365,11 @@ final class InterlinkSpec: XCTestCase {
                     }
                     init(
                         randomParameter: String,
-                        storedVar: @escaping () -> Void,
-                        varWithDidSet: String
+                        varWithDidSet: String,
+                        storedVar: @escaping () -> Void
                     ) {
                         struct Model {
-                            let value: String /// Extension runs for all structs/classes/actors found in the file, so this local struct will also be generated.
+                            let value: String
 
                             init(
                                 value: String

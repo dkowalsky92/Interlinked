@@ -1,6 +1,6 @@
 //
 //  AppViewModel.swift
-//  Interlinked
+//  InterlinkedUI
 //
 //  Created by Dominik Kowalski on 23/05/2023.
 //

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
    LastUpgradeVersion = "1430"
+   wasCreatedForAppExtension = "YES"
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,9 +15,23 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "89AFD90B2A13DEAA0055B2CB"
-               BuildableName = "Interlinked.app"
+               BlueprintIdentifier = "895FF1F12A9CE455007D2B45"
+               BuildableName = "Interlinked.appex"
                BlueprintName = "Interlinked"
+               ReferencedContainer = "container:Interlinked.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "89AFD90B2A13DEAA0055B2CB"
+               BuildableName = "InterlinkedUI.app"
+               BlueprintName = "InterlinkedUI"
                ReferencedContainer = "container:Interlinked.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -31,38 +46,43 @@
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
-      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
-      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      selectedDebuggerIdentifier = ""
+      selectedLauncherIdentifier = "Xcode.IDEFoundation.Launcher.PosixSpawn"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <PathRunnable
+         runnableDebuggingMode = "0"
+         FilePath = "/Applications/Xcode.app">
+      </PathRunnable>
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "89AFD90B2A13DEAA0055B2CB"
-            BuildableName = "Interlinked.app"
-            BlueprintName = "Interlinked"
+            BuildableName = "InterlinkedUI.app"
+            BlueprintName = "InterlinkedUI"
             ReferencedContainer = "container:Interlinked.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
-      debugDocumentVersioning = "YES">
+      debugDocumentVersioning = "YES"
+      askForAppToLaunch = "Yes"
+      launchAutomaticallySubstyle = "2">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "89AFD90B2A13DEAA0055B2CB"
-            BuildableName = "Interlinked.app"
-            BlueprintName = "Interlinked"
+            BuildableName = "InterlinkedUI.app"
+            BlueprintName = "InterlinkedUI"
             ReferencedContainer = "container:Interlinked.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

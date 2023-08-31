@@ -1,0 +1,147 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+def configuration_for_type(type)
+  case type
+  when "development"
+    return "Debug"
+  when "appstore"
+    return "Release"
+  when "developer_id"
+    return "DeveloperId"
+  else
+    UI.user_error!("Unexpected type: #{type}")
+  end
+end
+
+def export_method_for_type(type)
+  case type
+  when "development"
+    return "development"
+  when "appstore"
+    return "app-store"
+  when "developer_id"
+    return "developer-id"
+  else
+    UI.user_error!("Unexpected type: #{type}")
+  end
+end
+
+default_platform(:mac)
+
+platform :mac do
+  desc "Push a new release build to the App Store"
+  lane :release do |options|
+    version_number = options[:version_number]
+    projectPath = "./Interlinked/Interlinked.xcodeproj"
+    target = "InterlinkedUI"
+    type = "appstore"
+    configuration = configuration_for_type(type)
+
+    update_certificates_and_profiles(type: type, readonly: true)
+    test
+    increment_version_number(xcodeproj: projectPath)
+    increment_build_number(xcodeproj: projectPath)
+    build_mac_app(
+      scheme: target, 
+      project: projectPath,
+      configuration: configuration,
+      clean: true,
+      export_method: export_method_for_type(type),
+    )
+    upload_to_app_store(skip_metadata: true, skip_screenshots: true)
+  end
+
+  lane :development_build do 
+    build(type: "development", clean: false)
+  end
+
+  lane :build do |options|
+    # type = options[:type]
+    # clean = options[:clean]
+    
+    # build_version = get_version_number(xcodeproj: projectPath, target: target)
+    # build_number = get_build_number(xcodeproj: projectPath)
+    # configuration = configuration_for_type(type)
+    
+  end
+
+  desc "Update certificates and profiles"
+  lane :update_certificates_and_profiles do |options|
+    type = options[:type]
+    readonly = options[:readonly]
+    configuration = configuration_for_type(type)
+    projectPath = "./Interlinked/Interlinked.xcodeproj"
+
+    UI.message("Type: #{type}, Configuration: #{configuration}")
+
+    match(type: type, app_identifier: ["com.dkowalsky92.InterlinkedUI", "com.dkowalsky92.InterlinkedUI.Interlinked"], platform: "macos", readonly: readonly)
+
+    profile = ENV["sigh_com.dkowalsky92.InterlinkedUI_#{type}_macos_profile-path"]
+    certificate = ENV["sigh_com.dkowalsky92.InterlinkedUI_#{type}_macos_certificate-name"]
+    extensionProfile = ENV["sigh_com.dkowalsky92.InterlinkedUI.Interlinked_#{type}_macos_profile-path"]
+    extensionCertificate = ENV["sigh_com.dkowalsky92.InterlinkedUI.Interlinked_#{type}_macos_certificate-name"]
+
+    UI.message("Profile: #{profile}, Certificate: #{certificate}, Extension Profile: #{extensionProfile}, Extension Certificate: #{extensionCertificate}")
+
+    update_project_provisioning(
+      xcodeproj: projectPath,
+      target_filter: "InterlinkedUI",
+      build_configuration: configuration,
+      profile: profile,
+      code_signing_identity: certificate
+    )
+    update_project_provisioning(
+      xcodeproj: projectPath,
+      target_filter: "Interlinked",
+      build_configuration: configuration,
+      profile: extensionProfile,
+      code_signing_identity: extensionCertificate
+    )
+  end
+
+  desc "Provision all profiles & certificates"
+  lane :provision_all_profiles_and_certificates do |options|
+    readonly = options[:readonly]
+    update_certificates_and_profiles(type: "development", readonly: readonly)
+    update_certificates_and_profiles(type: "appstore", readonly: readonly)
+    update_certificates_and_profiles(type: "developer_id", readonly: readonly)
+  end
+
+  desc "Nuke all profiles & certificates"
+  lane :nuke_all_profiles_and_certificates do
+    match_nuke(type: "development", platform: "macos")
+    match_nuke(type: "appstore", platform: "macos")
+    match_nuke(type: "developer_id", platform: "macos")
+  end
+
+  desc "Fetch dependencies"
+  lane :resolve_dependencies do
+    spm(command: "resolve", package_path: "./InterlinkedCore")
+  end
+  
+  desc "Test InterlinkedCore package"
+  lane :test do
+    resolve_dependencies
+    spm(command: "build", package_path: "./InterlinkedCore")
+    spm(command: "test", package_path: "./InterlinkedCore")
+  end
+
+  desc "Increment version number"
+  lane :increment_version do
+    increment_version_number(xcodeproj: "./Interlinked/Interlinked.xcodeproj")
+  end
+end
+

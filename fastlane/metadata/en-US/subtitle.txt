@@ -1,0 +1,3 @@
+Interlinked is an Xcode Source Extension that automatically keeps your initializer in sync with the state of your class/struct/actor variables. 
+It provides a seamless way to generate initializer parameters and assignments, while preserving your existing code structure and initializer. 
+It provides formatting options to customize the generated code to your preferences. 
