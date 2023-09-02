@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dominik Kowalski's Profile</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .container {
+            display: flex;
+            align-items: flex-start;
+            padding-top: 50px;
+        }
+        .right-column { 
+            margin-left: 16px;
+        }
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .social-link {
+            display: flex;
+            align-items: center;
+            margin-right: 16px;
+        }
+        .social-icon {
+            width: 24px;
+            margin-right: 8px;
+        }
+        .name-and-title {
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 4px;
+        }
+        .secondary-text {
+            color: #9b9fa3;
+        }
+        .profile-picture {
+            border-radius: 50%;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-column">
+            <img src="avatar.jpeg" alt="Dominik Kowalski" class="profile-picture">
+            <div class="name-and-title">
+                <div>Dominik Kowalski</div>
+                <div class="secondary-text">Senior Mobile Engineer</div>
+            </div>
+            <div class="social-link">
+                <img src="github.png" alt="GitHub" class="social-icon">
+                <a href="https://github.com/dkowalsky92" target="_blank">GitHub</a>
+            </div>
+            <div class="social-link">
+                <img src="linkedin.png" alt="LinkedIn" class="social-icon">
+                <a href="https://linkedin.com/in/dkowalsky92/" target="_blank">LinkedIn</a>
+            </div>
+            <div class="social-link">
+                <img src="envelope.png" alt="Email" class="social-icon">
+                <a href="mailto:d.kowalsky92@gmail.com" target="_blank">d.kowalsky92@gmail.com</a>
+            </div>
+        </div>
+        
+        <div class="right-column">            
+            iOS engineer for the past 7 years. Also dabbling in backend development with Go. 
+            Annoyed with writing boilerplate code in Xcode. I enjoy different things, old Porsches, Ducati motorcycles, Denis Villeneuve's movies, creepy dystopian audiovisuals, fictional worlds, multiplayer shooters. 
+            I can also snowboard quite well (but haven't done it in a while). 
+            Oh, and coding stuff, I like that too.
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,80 @@
+
+TEMP_KEYCHAIN_USER = ENV["TEMP_KEYCHAIN_USER"]
+TEMP_KEYCHAIN_PASSWORD = ENV["TEMP_KEYCHAIN_PASSWORD"]
+
+module AppId
+  INTERLINKED_UI = "com.dkowalsky92.InterlinkedUI"
+  INTERLINKED = "com.dkowalsky92.InterlinkedUI.Interlinked"
+end
+
+module Target
+  INTERLINKED_UI = "InterlinkedUI"
+  INTERLINKED = "Interlinked"
+  INTERLINKED_CORE = "InterlinkedCore"
+  INTERLINKED_SHARED = "InterlinkedShared"
+end
+
+module Branch
+  MASTER = "master"
+  DEVELOP = "develop"
+end
+
+module Path
+  PACKAGE_PATH = "./InterlinkedCore"
+  XCODE_PROJECT_PATH = "./Interlinked/Interlinked.xcodeproj"
+end
+
+module VersionBump
+  PATCH = "patch"
+  MINOR = "minor"
+  MAJOR = "major"
+end
+
+module AdditionalCertType
+  MAC_INSTALLER_DISTRIBUTION = "mac_installer_distribution"
+  DEVELOPER_ID_INSTALLER = "developer_id_installer"
+end
+
+module BuildType
+  DEVELOPMENT = "development"
+  APP_STORE = "appstore"
+  DEVELOPER_ID = "developer_id"
+
+  def self.configuration_for_type(type)
+    case type
+    when BuildType::DEVELOPMENT
+      return Configuration::DEBUG
+    when BuildType::APP_STORE
+      return Configuration::RELEASE
+    when BuildType::DEVELOPER_ID
+      return Configuration::DEVELOPER_ID
+    else
+      UI.user_error!("Unexpected type: #{type}")
+    end
+  end
+
+  def self.export_method_for_type(type)
+    case type
+    when BuildType::DEVELOPMENT
+      return ExportMethod::DEVELOPMENT
+    when BuildType::APP_STORE
+      return ExportMethod::APP_STORE
+    when BuildType::DEVELOPER_ID
+      return ExportMethod::DEVELOPER_ID
+    else
+      UI.user_error!("Unexpected type: #{type}")
+    end
+  end
+end
+
+module Configuration
+  DEBUG = "Debug"
+  RELEASE = "Release"
+  DEVELOPER_ID = "DeveloperId"
+end
+
+module ExportMethod
+  DEVELOPMENT = "development"
+  APP_STORE = "app-store"
+  DEVELOPER_ID = "developer-id"
+end

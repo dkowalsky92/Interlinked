@@ -1,0 +1,59 @@
+app_identifier(ENV["APP_IDENTIFIER"])
+team_id(ENV["APP_STORE_CONNECT_TEAM_ID"])
+dev_portal_team_id(ENV["DEVELOPER_PORTAL_TEAM_ID"])
+username(ENV["APPLE_ID"])
+submit_for_review(false)
+
+precheck_include_in_app_purchases(false)
+reject_if_possible(true)
+platform("osx")
+
+app_review_information(
+    first_name: "Dominik",
+    last_name: "Kowalski",
+    phone_number: ENV["PHONE_NUMBER"],
+    email_address: ENV["APPLE_ID"]
+)
+
+name({
+    'default' => "Interlinked",
+})
+
+subtitle({
+    'default' => "For Xcode",
+})
+
+promotional_text({
+    'default' => "Interlinked is an Xcode Source Extension that automatically keeps your initializer in sync with the state of your class/struct/actor variables."
+})
+
+description({
+    'default' => <<~DESC
+Features:
+- Parameter Injection and Assignments: Seamlessly injects parameters and their respective assignments.
+- Smart Parameter Removal: Automatically removes parameters and their assignments that don't correspond to any stored variable in the class/struct/actor.
+- Intelligent Property Handling: Distinguishes which properties are settable, ensuring computed properties are left untouched.
+- Initializer Scope Awareness: Recognizes values defined within the initializer's scope, even accommodating scenarios where a single locally-defined value might set multiple stored variables.
+- Scoped Value Comprehension: Capable of understanding values defined in conditional scopes, such as within `if` statements.
+- Sorting Option for Parameters: Provides an option to sort parameters and their assignments based on the order of variables in the class/struct/actor. This can be disabled for those who find it intrusive.
+- Cleanup of Unused Local Definitions: Streamlines initializers by removing unused local variables, functions, structs, enums, classes, and actors defined within the initializer's scope.
+- Formatting Flexibility: Offers three distinct formatting options for the initializer. Also provides an automatic line break feature when the line length exceeds a user-defined limit.
+DESC
+})
+privacy_url({
+    'default' => "https://dkowalsky92.github.io/Interlinked/privacy_policy.html"
+})
+support_url({
+    'default' => "https://dkowalsky92.github.io/Interlinked/about_me.html"
+})
+marketing_url({
+    'default' => "https://dkowalsky92.github.io/Interlinked"
+})
+
+keywords({
+    'default' => "Xcode Source Extension, Formatter, Code Generation, Sorter",
+})
+
+copyright("2023, Dominik Kowalski")
+
+primary_category("DEVELOPER_TOOLS")

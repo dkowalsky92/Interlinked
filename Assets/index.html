@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Interlinked</title>
+    <style>
+      .link-container {
+        margin-top: 25px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+    </style>
+</head>
+<body>
+  <p align="center">
+    <img src="./logo.png" />
+  </p>
+  
+  <h1>Interlinked</h1>
+  
+  <p>Interlinked is an Xcode Source Extension that automatically keeps your initializer in sync with the state of your class/struct/actor variables. It provides a seamless way to generate initializer parameters and assignments, while preserving your existing code structure and initializer. It provides formatting options to customize the generated code to your preferences.</p>
+  
+  <h4>Example Usage</h4>
+  <p>
+    <img src="./example_usage.gif" alt="Example usage" style="border-radius: 10px;" />
+  </p>
+  
+  <h4>Companion App</h4>
+  <p>
+    <img src="./companion_app.png" alt="Companion app" style="border-radius: 10px;" />
+  </p>
+  
+  <h2>Features</h2>
+  
+  <ul>
+    <li><strong>Parameter Injection and Assignments</strong>: Seamlessly injects parameters and their respective assignments.</li>
+    <li><strong>Smart Parameter Removal</strong>: Automatically removes parameters and their assignments that don't correspond to any stored variable in the class/struct/actor.</li>
+    <li><strong>Intelligent Property Handling</strong>: Distinguishes which properties are settable, ensuring computed properties are left untouched.</li>
+    <li><strong>Initializer Scope Awareness</strong>: Recognizes values defined within the initializer's scope, even accommodating scenarios where a single locally-defined value might set multiple stored variables.</li>
+    <li><strong>Scoped Value Comprehension</strong>: Capable of understanding values defined in conditional scopes, such as within <code>if</code> statements.</li>
+    <li><strong>Sorting Option for Parameters</strong>: Provides an option to sort parameters and their assignments based on the order of variables in the class/struct/actor. This can be disabled for those who find it intrusive.</li>
+    <li><strong>Cleanup of Unused Local Definitions</strong>: Streamlines initializers by removing unused local variables, functions, structs, enums, classes, and actors defined within the initializer's scope.</li>
+    <li><strong>Formatting Flexibility</strong>: Offers three distinct formatting options for the initializer. Also provides an automatic line break feature when the line length exceeds a user-defined limit.</li>
+    <li><strong>... And More!</strong>: Continual improvements and features are in the works, ensuring the tool stays relevant and powerful.</li>
+  </ul>
+  
+  <h2>Limitations</h2>
+  
+  <ul>
+    <li>Interlinked does not currently support <em>Decodable</em> initializers. This is a planned feature for a future release.</li>
+    <li>Interlinked attempts to maintain application logic, but it is not a seer and may not always generate the code you expect. Please review the generated code before committing it to your project.</li>
+    <li>There may be bugs. Please report any issues you encounter.</li>
+  </ul>
+
+  <div class="link-container">
+    <h4><a href="privacy_policy.html">Privacy Policy</a></h4>
+    <h4><a href="about_me.html">About me</a></h4>
+  </div>
+</body>
+</html>
+
+
+

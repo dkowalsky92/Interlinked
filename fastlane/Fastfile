@@ -1,0 +1,141 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+import "PrivateFastfile"
+
+default_platform(:mac)
+
+platform :mac do
+  desc "Push a new release build to the App Store"
+  lane :release do |options|
+    branch = git_branch
+    if branch != Branch::DEVELOP
+      UI.user_error!("You must be on the develop branch to release a new version")
+    end
+    if !ensure_git_status_clean
+      UI.user_error!("You must commit all changes before releasing a new version")
+    end
+    dryrun = options.fetch(:dryrun, false)
+    type = BuildType::APP_STORE
+    configuration = BuildType.configuration_for_type(type)
+    api_key = load_asc_api_key
+
+    ensure_temp_keychain(TEMP_KEYCHAIN_USER, TEMP_KEYCHAIN_PASSWORD)
+
+    update_certificates_and_profiles(type: type, readonly: false, useTempKeychain: true)
+
+    test
+    
+    if options[:version_number]
+      set_version(version_number: options[:version_number])
+    elsif options[:bump]
+      increment_version(bump: options[:bump])
+    else
+      increment_version
+    end
+
+    build_mac_app(
+      scheme: Target::INTERLINKED_UI, 
+      project: Path::XCODE_PROJECT_PATH,
+      configuration: configuration,
+      clean: true,
+      output_directory: ".build",
+      export_method: BuildType.export_method_for_type(type),
+    )
+    
+    if dryrun
+      upload_to_app_store(
+        api_key: api_key,
+        verify_only: true,
+        force: true,
+        skip_screenshots: true,
+        pkg: ".build/InterlinkedUI.pkg"
+      )
+      UI.success("Skipping commit and tag creation due to dryrun flag")
+    else
+      upload_to_app_store(
+        api_key: api_key,
+        force: true,
+        skip_screenshots: true,
+        pkg: ".build/InterlinkedUI.pkg"
+      )
+      version_number = local_version_number
+      if !ensure_git_status_clean
+        git_commit(path: ".", message: "Update version to #{version_number}")
+      end
+
+      add_git_tag(
+        tag: version_number, 
+        message: "New version - #{version_number}",
+        includes_lane: false,
+        build_number: local_build_number
+      )
+
+      push_to_git_remote(tags: true)
+    end
+    
+    ensure
+      delete_temp_keychain(TEMP_KEYCHAIN_USER)
+  end
+
+  desc "Build and test a debug build"
+  lane :build_and_test do |options|
+    type = BuildType::DEVELOPMENT
+    configuration = BuildType.configuration_for_type(type)
+    exportMethod= BuildType.export_method_for_type(type)
+    api_key = load_asc_api_key
+
+    ensure_temp_keychain(TEMP_KEYCHAIN_USER, TEMP_KEYCHAIN_PASSWORD)
+
+    update_certificates_and_profiles(type: type, readonly: false, useTempKeychain: true)
+
+    test
+
+    build_mac_app(
+      scheme: Target::INTERLINKED_UI, 
+      project: Path::XCODE_PROJECT_PATH,
+      configuration: configuration,
+      clean: true,
+      skip_archive: true,
+      skip_build_archive: true,
+      skip_package_pkg: true,
+      export_method: exportMethod,
+    )
+
+    ensure
+      delete_temp_keychain(TEMP_KEYCHAIN_USER)
+  end
+
+  desc "Test InterlinkedCore package"
+  lane :test do
+    spm(command: "resolve", package_path: Path::PACKAGE_PATH)
+    spm(command: "build", package_path: Path::PACKAGE_PATH)
+    spm(command: "test", package_path: Path::PACKAGE_PATH)
+  end
+
+  desc "Provision all profiles & certificates"
+  lane :provision_all_profiles_and_certificates do
+    update_certificates_and_profiles(type: BuildType::DEVELOPMENT, readonly: false, useTempKeychain: false)
+    update_certificates_and_profiles(type: BuildType::APP_STORE, readonly: false, useTempKeychain: false)
+    update_certificates_and_profiles(type: BuildType::DEVELOPER_ID, readonly: false, useTempKeychain: false)
+  end
+
+  desc "Nuke all profiles & certificates"
+  lane :nuke_all_profiles_and_certificates do
+    match_nuke(type: BuildType::DEVELOPMENT, platform: "macos")
+    match_nuke(type: BuildType::APP_STORE, platform: "macos")
+    match_nuke(type: BuildType::DEVELOPER_ID, platform: "macos")
+  end
+end

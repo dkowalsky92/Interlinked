@@ -1,0 +1,192 @@
+import "ConstantsFastfile"
+
+# Versioning
+
+private_lane :set_version do |options|
+  version = options[:version_number]
+  if version.nil?
+    UI.user_error("No version number provided. Please provide a version number.")
+  end
+ 
+  build_number = "#{latest_build_number + 1}"
+
+  UI.message("latest_build_number #{latest_build_number} new build number #{build_number}")
+
+  increment_build_number_in_xcodeproj(xcodeproj: Path::XCODE_PROJECT_PATH, target: Target::INTERLINKED_UI, build_number: build_number)
+  increment_build_number_in_xcodeproj(xcodeproj: Path::XCODE_PROJECT_PATH, target: Target::INTERLINKED, build_number: build_number)
+
+  increment_version_number_in_xcodeproj(
+    version_number: version,
+    xcodeproj: Path::XCODE_PROJECT_PATH,
+    target: Target::INTERLINKED_UI,
+    omit_zero_patch_version: true
+  )
+  increment_version_number_in_xcodeproj(
+    version_number: version,
+    xcodeproj: Path::XCODE_PROJECT_PATH, 
+    target: Target::INTERLINKED,
+    omit_zero_patch_version: true
+  )
+end
+
+private_lane :increment_version do |options|
+  build_number = "#{latest_build_number + 1}"
+  bump_type = options.fetch(:bump, VersionBump::PATCH)
+  
+  UI.message("latest_build_number #{latest_build_number} new build number #{build_number}")
+
+  increment_build_number_in_xcodeproj(xcodeproj: Path::XCODE_PROJECT_PATH, target: Target::INTERLINKED_UI, build_number: build_number)
+  increment_build_number_in_xcodeproj(xcodeproj: Path::XCODE_PROJECT_PATH, target: Target::INTERLINKED, build_number: build_number)
+
+  increment_version_number_in_xcodeproj(
+    bump_type: bump_type,
+    xcodeproj: Path::XCODE_PROJECT_PATH,
+    target: Target::INTERLINKED_UI,
+    omit_zero_patch_version: true
+  )
+  increment_version_number_in_xcodeproj(
+    bump_type: bump_type,
+    xcodeproj: Path::XCODE_PROJECT_PATH, 
+    target: Target::INTERLINKED,
+    omit_zero_patch_version: true
+  )
+end
+
+desc "Get latest build number"
+private_lane :latest_build_number do
+  api_key = lane_context[SharedValues::APP_STORE_CONNECT_API_KEY]
+  if api_key.nil?
+    UI.user_error("No API key found. Please run `load_asc_api_key` before calling this lane.")
+  end
+
+  latest_testflight_build_number(
+    live: false,
+    platform: "osx",
+    initial_build_number: local_build_number,
+    app_identifier: AppId::INTERLINKED_UI,
+    api_key: api_key
+  )
+end
+
+desc "Get local build number"
+private_lane :local_build_number do
+  get_build_number_from_xcodeproj(
+    xcodeproj: Path::XCODE_PROJECT_PATH,
+    target: Target::INTERLINKED_UI
+  )
+end
+
+desc "Get local version number"
+private_lane :local_version_number do
+  get_version_number_from_xcodeproj(
+    xcodeproj: Path::XCODE_PROJECT_PATH,
+    target: Target::INTERLINKED_UI
+  )
+end
+
+# Certificates and Profiles
+
+desc "Update certificates and profiles"
+private_lane :update_certificates_and_profiles do |options|
+  type = options[:type]
+  useTempKeychain = options[:useTempKeychain]
+  configuration = BuildType.configuration_for_type(type)
+  readonly = options[:readonly]
+  api_key = lane_context[SharedValues::APP_STORE_CONNECT_API_KEY]
+
+  additionalCertType = if type == BuildType::DEVELOPER_ID
+    AdditionalCertType::DEVELOPER_ID_INSTALLER
+  elsif type == BuildType::APP_STORE
+    AdditionalCertType::MAC_INSTALLER_DISTRIBUTION
+  else
+    nil
+  end
+
+  if type == BuildType::DEVELOPMENT && !useTempKeychain
+    register_devices(
+      devices: {
+        "MacBook Pro 16 Intel" => "AF0BD1AF-923E-53AD-8036-3FB613296E01",
+        "MacBook Pro 16 M1" => "25B8C53A-6487-5E49-9DCD-B9DC951BAB81",
+      },
+      api_key: api_key,
+      platform: "mac"
+    )
+  end
+
+  if useTempKeychain
+    match(
+      type: type, 
+      app_identifier: [AppId::INTERLINKED_UI, AppId::INTERLINKED],
+      additional_cert_types: additionalCertType,
+      readonly: readonly,
+      api_key: api_key,
+      keychain_name: TEMP_KEYCHAIN_USER,
+      keychain_password: TEMP_KEYCHAIN_PASSWORD,
+      force_for_new_devices: false
+    )
+  else
+    match(
+      type: type, 
+      app_identifier: [AppId::INTERLINKED_UI, AppId::INTERLINKED],
+      additional_cert_types: additionalCertType,
+      readonly: readonly,
+      api_key: api_key,
+      force_for_new_devices: true
+    )
+  end
+  
+  profile = ENV["sigh_#{AppId::INTERLINKED_UI}_#{type}_macos_profile-path"]
+  certificate = ENV["sigh_#{AppId::INTERLINKED_UI}_#{type}_macos_certificate-name"]
+  extensionProfile = ENV["sigh_#{AppId::INTERLINKED}_#{type}_macos_profile-path"]
+  extensionCertificate = ENV["sigh_#{AppId::INTERLINKED}_#{type}_macos_certificate-name"]
+
+  update_project_provisioning(
+    xcodeproj: Path::XCODE_PROJECT_PATH,
+    target_filter: Target::INTERLINKED_UI,
+    build_configuration: configuration,
+    profile: profile,
+    code_signing_identity: certificate
+  )
+  update_project_provisioning(
+    xcodeproj: Path::XCODE_PROJECT_PATH,
+    target_filter: Target::INTERLINKED,
+    build_configuration: configuration,
+    profile: extensionProfile,
+    code_signing_identity: extensionCertificate
+  )
+end
+
+# App Store Connect
+
+desc "Load ASC API Key information to use in subsequent lanes"
+private_lane :load_asc_api_key do
+  app_store_connect_api_key(
+     key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
+     issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+     key_content: ENV["APP_STORE_CONNECT_KEY_CONTENT"],
+     is_key_content_base64: false,
+     in_house: false
+  )
+end
+
+# Keychain
+
+def delete_temp_keychain(name)
+  delete_keychain(
+    name: name
+  ) if File.exist? File.expand_path("~/Library/Keychains/#{name}-db")
+end
+
+def create_temp_keychain(name, password)
+  create_keychain(
+    name: name,
+    password: password,
+    unlock: false,
+    timeout: 0
+  )
+end
+
+def ensure_temp_keychain(name, password)
+  delete_temp_keychain(name)
+  create_temp_keychain(name, password)
+end

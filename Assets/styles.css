@@ -1,0 +1,27 @@
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    padding: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: #0d1117;
+    color: #c9d1d9;
+}
+
+img {
+    max-width: 100%;
+}
+
+a {
+    color: #c9d1d9;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #5E5CE6;
+    text-decoration: underline;
+}
+
+ul, ol {
+    padding-left: 20px;
+}

@@ -1,0 +1,46 @@
+name: Build and test the app
+
+on: 
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Swift ${{ matrix.swift }} on ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-13]
+        swift: ["5.8"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@65540b95f51493d65f5e59e97dcef9629ddf11bf
+        with:
+          swift-version: ${{ matrix.swift }}
+
+      - name: Set Xcode version
+        run: sudo xcode-select -s '/Applications/Xcode_14.3.1.app/Contents/Developer'
+        
+      - name: Fetch actions repo
+        uses: actions/checkout@v3    
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Build and Test
+        run: bundle exec fastlane development_build
+        env:
+          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          DEVELOPER_PORTAL_TEAM_ID: ${{ secrets.DEVELOPER_PORTAL_TEAM_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_KEY_CONTENT }}
+          APP_STORE_CONNECT_TEAM_ID: ${{ secrets.APP_STORE_CONNECT_TEAM_ID }}
+          PHONE_NUMBER: ${{ secrets.PHONE_NUMBER }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          TEMP_KEYCHAIN_PASSWORD: ${{ secrets.TEMP_KEYCHAIN_PASSWORD }}
+          TEMP_KEYCHAIN_USER: ${{ secrets.TEMP_KEYCHAIN_USER }}
+          GIT_CERTIFICATES_REPO: ${{ secrets.GIT_CERTIFICATES_REPO }}
+          
