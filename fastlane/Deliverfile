@@ -51,7 +51,7 @@ marketing_url({
 })
 
 keywords({
-    'default' => "Xcode Source Extension, Formatter, Code Generation, Sorter",
+    'default' => "Xcode Source Extension, Code Generation, Formatter, Sorter",
 })
 
 copyright("2023, Dominik Kowalski")

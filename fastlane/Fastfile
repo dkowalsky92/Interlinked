@@ -54,7 +54,7 @@ platform :mac do
       output_directory: ".build",
       export_method: BuildType.export_method_for_type(type),
     )
-    
+
     if dryrun
       upload_to_app_store(
         api_key: api_key,
@@ -72,7 +72,12 @@ platform :mac do
         pkg: ".build/InterlinkedUI.pkg"
       )
       version_number = local_version_number
-      if !ensure_git_status_clean
+      begin
+        isClean = ensure_git_status_clean
+      rescue => exception
+        isClean = false
+      end
+      if !isClean
         git_commit(path: ".", message: "Update version to #{version_number}")
       end
 
