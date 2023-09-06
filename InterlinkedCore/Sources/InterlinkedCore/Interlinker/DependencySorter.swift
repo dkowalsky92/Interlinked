@@ -24,6 +24,7 @@ class DependencySorter {
     }
     
     func sortDependencies(definitions: DependencyDefinitions) -> DependencyDefinitions {
+        var remainingParametersCache = definitions.parametersCache
         var remainingItemsCache = definitions.codeBlockItemsCache
         
         let graph = buildExistingGraph(
@@ -63,7 +64,16 @@ class DependencySorter {
                 vertices = vertices.reversed()
                 pathVertices.append(vertices)
             }
-            let uniqued = pathVertices.flatMap { $0 }.uniqued()
+            
+            var uniqued = pathVertices.flatMap { $0 }.uniqued()
+            if let firstAfterAssignmentIndex = definitions.firstAfterAssignmentsIndex {
+                uniqued = uniqued.filter {
+                    guard case .codeBlockItem(let info) = $0 else {
+                        return true
+                    }
+                    return info.id < firstAfterAssignmentIndex
+                }
+            }
             var parameterInfo = uniqued.compactMap { (vertex: Vertex) -> Vertex.Info? in
                 guard case .parameter(let info) = vertex else {
                     return nil
@@ -77,6 +87,7 @@ class DependencySorter {
             }
             for info in parameterInfo {
                 resultParameters.append(definitions.parametersCache[info.id]!)
+                remainingParametersCache.removeValue(forKey: info.id)
             }
             
             var codeBlockItemInfo = uniqued.compactMap { (vertex: Vertex) -> Vertex.Info? in
@@ -92,6 +103,13 @@ class DependencySorter {
                 resultCodeBlockItems.append(definitions.codeBlockItemsCache[info.id]!)
                 remainingItemsCache.removeValue(forKey: info.id)
             }
+        }
+        
+        let remainingParameters = Array(remainingParametersCache.values).sorted { lhs, rhs in
+            lhs.id < rhs.id
+        }
+        for remainingParameter in remainingParameters {
+            resultParameters.append(remainingParameter)
         }
         
         let remainingItems = Array(remainingItemsCache.values).sorted { lhs, rhs in

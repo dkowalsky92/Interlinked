@@ -216,6 +216,14 @@ extension VariableDecl {
             }
         } else if let isLazy = modifiers?.contains(where: { $0.name.textWithoutTrivia == "lazy" }), isLazy {
             return true
+        } else if let isEnvironment = attributes?.contains(where: {
+            guard case .customAttribute(let attribute) = $0 else {
+                return false
+            }
+            let name = attribute.attributeName.textWithoutTrivia
+            return name == "EnvironmentObject" || name == "Environment"
+        }), isEnvironment {
+            return true
         } else {
             return false
         }

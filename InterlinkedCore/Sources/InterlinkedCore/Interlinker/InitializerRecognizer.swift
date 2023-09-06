@@ -53,7 +53,21 @@ class ConvenienceInitializerRecognizer: InitializerRecognizer {
     
     func isOfType(initializer: InitializerDecl) -> Bool {
         (initializer.modifiers?.contains(where: {
-            $0.name == .contextualKeyword(Constants.convenienceKeyword)
+            $0.name.textWithoutTrivia == Constants.convenienceKeyword
+        }) ?? false)
+    }
+}
+
+class OverrideInitializerRecognizer: InitializerRecognizer {
+    private enum Constants {
+        static let overrideKeyword = "override"
+    }
+    
+    init() {}
+    
+    func isOfType(initializer: InitializerDecl) -> Bool {
+        (initializer.modifiers?.contains(where: {
+            $0.name.textWithoutTrivia == Constants.overrideKeyword
         }) ?? false)
     }
 }

@@ -124,7 +124,8 @@ class DependencyRewriter: SyntaxRewriter {
     }
     
     private func shouldInsertInitializer(initializerCache: [Int: InitializerDecl]) -> Bool {
-        return initializerCache.isEmpty || initializerCache.allSatisfy { decodableInitializerRecognizer.isOfType(initializer: $0.value)
+        return initializerCache.isEmpty || initializerCache.allSatisfy {
+            decodableInitializerRecognizer.isOfType(initializer: $0.value)
         }
     }
 

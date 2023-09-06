@@ -1495,6 +1495,131 @@ final class InterlinkSpec: XCTestCase {
                 }
                 """
             ),
+            .init(
+                context: "",
+                input: """
+                class ViewController: UIViewController {
+                    let contentViewController: UIViewController
+
+                    init(contentViewController: UIViewController) {
+                        self.contentViewController = contentViewController
+                        super.init(nibName: nil, bundle: nil)
+                        addChild(contentViewController)
+                        contentViewController.didMove(toParent: self)
+                    }
+                }
+                """,
+                expectedOutput:  """
+                class ViewController: UIViewController {
+                    let contentViewController: UIViewController
+
+                    init(contentViewController: UIViewController) {
+                        self.contentViewController = contentViewController
+                        super.init(nibName: nil, bundle: nil)
+                        addChild(contentViewController)
+                        contentViewController.didMove(toParent: self)
+                    }
+                }
+                """
+            )
+        ]
+        
+        for testCase in testCases {
+            let sut = Interlink(configuration: testCase.configuration)
+            do {
+                let output = try sut.interlink(input: testCase.input)
+                XCTAssertEqual(output, testCase.expectedOutput, testCase.context)
+            } catch {
+                XCTFail(error.localizedDescription)
+            }
+        }
+    }
+    
+    func testOverriddenInitializers() {
+        let testCases: [TestCase] = [
+            .init(
+                context: "has a superclass with overridden initializer",
+                input: """
+                class SuperTest: Test {
+                    override init(custom: String, superVal: @escaping () -> Void) {
+                        super.init(custom: custom, superVal: superVal)
+                    }
+                
+                    required init?(coder: NSCoder) {
+                        fatalError("init(coder:) has not been implemented")
+                    }
+                }
+                """,
+                expectedOutput: """
+                class SuperTest: Test {
+                    override init(custom: String, superVal: @escaping () -> Void) {
+                        super.init(custom: custom, superVal: superVal)
+                    }
+                
+                    required init?(coder: NSCoder) {
+                        fatalError("init(coder:) has not been implemented")
+                    }
+                }
+                """
+            ),
+        ]
+        
+        for testCase in testCases {
+            let sut = Interlink(configuration: testCase.configuration)
+            do {
+                let output = try sut.interlink(input: testCase.input)
+                XCTAssertEqual(output, testCase.expectedOutput, testCase.context)
+            } catch {
+                XCTFail(error.localizedDescription)
+            }
+        }
+    }
+    
+    func testSuperInitInitializers() {
+        let testCases: [TestCase] = [
+            .init(
+                context: "has a superclass with overridden initializer",
+                input: """
+                class Test {
+                    let value: String
+                    let otherValue: Int
+
+                    init(value: String, otherValue: Int) {
+                        self.value = value
+                        self.otherValue = otherValue
+                    }
+                }
+
+                class SuperTest: Test {
+                    let superValue: String
+
+                    init(superValue: String, value: String, otherValue: Int) {
+                        self.superValue = superValue
+                        super.init(value: value, otherValue: otherValue)
+                    }
+                }
+                """,
+                expectedOutput: """
+                class Test {
+                    let value: String
+                    let otherValue: Int
+
+                    init(value: String, otherValue: Int) {
+                        self.value = value
+                        self.otherValue = otherValue
+                    }
+                }
+
+                class SuperTest: Test {
+                    let superValue: String
+
+                    init(superValue: String, value: String, otherValue: Int) {
+                        self.superValue = superValue
+                        super.init(value: value, otherValue: otherValue)
+                    }
+                }
+                """
+            ),
         ]
         
         for testCase in testCases {

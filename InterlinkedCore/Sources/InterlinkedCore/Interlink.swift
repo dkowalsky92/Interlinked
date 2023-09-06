@@ -24,7 +24,8 @@ public class Interlink {
         let filterInitializerRecognizers: [InitializerRecognizer] = [
             decodableInitializerRecognizer,
             ViewControllerCoderInitializerRecognizer(),
-            ConvenienceInitializerRecognizer()
+            ConvenienceInitializerRecognizer(),
+            OverrideInitializerRecognizer()
         ]
         
         let identifierExprCollector = IdentifierExprCollector(identifierFilterers: identifierFilterers)
