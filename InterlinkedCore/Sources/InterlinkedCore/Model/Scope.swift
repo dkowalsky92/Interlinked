@@ -81,20 +81,31 @@ class Scope: CustomDebugStringConvertible {
         self.assignments = self.assignments.union(assignments)
     }
     
-    func containsDeclaration(forIdentifier identifier: String, type: DeclarationType) -> Bool {
-        bfsWithContains { scope in
-            scope.declarations.contains(where: { $0.identifier == identifier && $0.type == type})
+    func containsStandardParameterAssignment(forIdentifier identifier: String) -> Bool {
+        var declarations = Set<String>()
+        return contains { scope  in
+            declarations = declarations.union(scope.declarations.map { $0.identifier })
+            let selfAssignmentCheck = scope.assignments.first(where: {
+                $0.info.assignee == identifier && $0.info.assigner.textWithoutTrivia == identifier
+            })
+            return selfAssignmentCheck != nil && !declarations.contains(identifier)
         }
     }
     
-    func containsUsed(identifier: String, skipLocalDeclarations: Bool = true) -> Bool {
+    func containsDeclaration(forIdentifier identifier: String, type: DeclarationType) -> Bool {
+        contains { scope in
+            scope.declarations.contains(where: { $0.identifier == identifier && $0.type == type })
+        }
+    }
+    
+    func containsUsed(identifier: String, skipAssignments: Bool = true, skipLocalDeclarations: Bool = true) -> Bool {
         if skipLocalDeclarations {
-            return bfsWithContains { scope in
+            return contains { scope in
                 scope.usedIdentifiers.contains(where: { $0.identifier == identifier })
             }
         } else {
             var declarations = Set<String>()
-            return bfsWithContains { scope in
+            return contains { scope in
                 declarations = declarations.union(scope.declarations.map { $0.identifier })
                 return scope.usedIdentifiers.contains(where: { $0.identifier == identifier }) && !declarations.contains(identifier)
             }
@@ -103,7 +114,7 @@ class Scope: CustomDebugStringConvertible {
     
     func instanceAssignment(forIdentifier identifier: String) -> Assignment? {
         var declarations = Set<Declaration>()
-        return bfsWithResult { scope -> Assignment? in
+        return first { scope -> Assignment? in
             declarations = declarations.union(scope.declarations)
             let selfAssignmentCheck = scope.assignments.first(where: { $0.info.assignee == identifier && $0.info.isInstance })
             let directAssignmentCheck = scope.assignments.first(where: { `assignment` in
@@ -115,8 +126,8 @@ class Scope: CustomDebugStringConvertible {
         }
     }
     
-    func localAssignment(forIdentifier identifier: String) -> Assignment? {
-        bfsWithResult { scope -> Assignment? in
+    func directAssignment(forIdentifier identifier: String) -> Assignment? {
+        first { scope -> Assignment? in
             scope.assignments.first(where: { $0.info.assignee == identifier && !$0.info.isInstance })
         }
     }
@@ -124,7 +135,7 @@ class Scope: CustomDebugStringConvertible {
     var debugDescription: String {
         var result = "Scope:\n"
         var indentation = "\t"
-        _ = bfsWithContains { scope in
+        _ = first { scope in
             result += """
             \(indentation)declarations(\n\(scope.declarations.map { "\(indentation)\(indentation)\($0.debugDescription)" }.joined(separator: ",\n"))\(indentation)\n),
             \(indentation)assignments(\n\(scope.assignments.map { "\(indentation)\(indentation)\($0.debugDescription)" }.joined(separator: ",\n"))\(indentation)\n),
@@ -137,7 +148,7 @@ class Scope: CustomDebugStringConvertible {
         return result
     }
 
-    private func bfsWithResult<OptionalResult>(perform: (Scope) -> OptionalResult?) -> OptionalResult? {
+    private func first<OptionalResult>(where perform: (Scope) -> OptionalResult?) -> OptionalResult? {
         var stack = Stack<Scope>()
         stack.push(self)
         while let next = stack.pop() {
@@ -152,7 +163,7 @@ class Scope: CustomDebugStringConvertible {
         return nil
     }
     
-    private func bfsWithContains(perform: (Scope) -> Bool) -> Bool {
+    private func contains(where perform: (Scope) -> Bool) -> Bool {
         var stack = Stack<Scope>()
         stack.push(self)
         while let next = stack.pop() {

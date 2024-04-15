@@ -85,10 +85,10 @@ public struct Configuration {
     public let maxLineLength: Int
     public let enableSorting: Bool
     public let formatterStyle: FormatterStyle
-    
+
     public init(
         spacesPerTab: Int = 4,
-        maxLineLength: Int = 160,
+        maxLineLength: Int = 100,
         enableSorting: Bool = true,
         formatterStyle: FormatterStyle = .google
     ) {

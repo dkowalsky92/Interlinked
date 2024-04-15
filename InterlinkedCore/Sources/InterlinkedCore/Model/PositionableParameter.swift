@@ -11,19 +11,19 @@ import SwiftSyntaxBuilder
 
 struct PositionableParameter: Hashable, Identifiable {
     let id: Int
-    let parameter: FunctionParameter
+    let parameter: FunctionParameterSyntax
     
-    init(id: Int, parameter: FunctionParameter) {
+    init(id: Int, parameter: FunctionParameterSyntax) {
         self.id = id
         self.parameter = parameter
     }
     
     var name: String {
-        parameter.secondName?.textWithoutTrivia ?? parameter.firstName?.textWithoutTrivia ?? ""
+        parameter.secondName?.textWithoutTrivia ?? parameter.firstName.textWithoutTrivia
     }
     
-    var unwrappedType: TypeSyntax? {
-        parameter.type?.unwrappedType
+    var unwrappedType: TypeSyntax {
+        parameter.type.unwrappedType
     }
     
     var vertex: Vertex {
@@ -36,5 +36,9 @@ struct PositionableParameter: Hashable, Identifiable {
 
     static func == (lhs: PositionableParameter, rhs: PositionableParameter) -> Bool {
         lhs.id == rhs.id
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }

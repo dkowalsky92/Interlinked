@@ -8,36 +8,65 @@
 import Foundation
 import SwiftSyntax
 import SwiftSyntaxBuilder
-import SwiftSyntaxParser
+
 import InterlinkedShared
 
 extension SyntaxProtocol {
     var textWithoutTrivia: String {
-        if let token = self.as(TokenSyntax.self) {
-            return token.text
-        } else {
-            var result = ""
-            for node in children(viewMode: .fixedUp) {
-                if let token = node.as(TokenSyntax.self) {
-                    result += token.text
-                } else {
-                    result += node.textWithoutTrivia
-                }
-            }
-            return result
+        trimmed.trimmedDescription
+    }
+    
+    func withLeadingNewLines(lines: Int = 1, indentation: Int) -> Self {
+        guard leadingTrivia.allSatisfy({ $0.isWhitespace }) else {
+            return self
         }
+        return with(\.leadingTrivia, .newLinesAndSpaces(lines: lines, spaces: indentation))
+    }
+    
+    func withTrailingNewLines(lines: Int = 1, indentation: Int) -> Self {
+        guard trailingTrivia.allSatisfy({ $0.isWhitespace }) else {
+            return self
+        }
+        return with(\.trailingTrivia, .newLinesAndSpaces(lines: lines, spaces: indentation))
+    }
+    
+    func indentation(configuration: Configuration) -> Int {
+        var count = 0
+        for piece in leadingTrivia.reversed() {
+            if piece.isNewline {
+                break
+            } else {
+                count += piece.sourceLength.utf8Length
+            }
+        }
+        return count
+    }
+}
+
+extension TokenSyntax {
+    func characters(until nodeId: SyntaxIdentifier) -> Int {
+        guard id != nodeId else {
+            return 0
+        }
+        var count = totalLength.utf8Length
+        var current = self
+        while let next = current.nextToken(viewMode: .sourceAccurate), next.id != nodeId {
+            count += next.totalLength.utf8Length
+            current = next
+        }
+        return count
     }
 }
 
 extension TypeSyntax {
     var unwrappedType: TypeSyntax {
-        if let tuple = self.as(TupleType.self), let firstElement = tuple.elements.first {
+        if let tuple = self.as(TupleTypeSyntax.self), let firstElement = tuple.elements.first {
             return firstElement.type.unwrappedType
-        } else if let attributed = self.as(AttributedType.self) {
+        } else if let attributed = self.as(AttributedTypeSyntax.self) {
             return attributed.baseType.unwrappedType
-        } else if let optional = self.as(OptionalType.self) {
+        } else if let optional = self.as(OptionalTypeSyntax.self) {
             return optional.wrappedType.unwrappedType
-        } else if let unwrappedOptional = self.as(ImplicitlyUnwrappedOptionalType.self) {
+        } else if let unwrappedOptional = self.as(ImplicitlyUnwrappedOptionalTypeSyntax.self) {
             return unwrappedOptional.wrappedType.unwrappedType
         } else {
             return self
@@ -45,51 +74,50 @@ extension TypeSyntax {
     }
 }
 
-extension AttributeList {
-    static var escaping: AttributeList {
-        AttributeList {
-            .attribute(.init(attributeName: .identifier("escaping")))
+extension AttributeListSyntax {
+    static var escaping: AttributeListSyntax {
+        AttributeListSyntax {
+            .attribute(AttributeSyntax(.init(stringLiteral: "escaping")))
         }
-        .withTrailingTrivia(.space)
+        .with(\.trailingTrivia, .space)
     }
 }
 
-extension PatternBinding {
+extension PatternBindingSyntax {
     var nameIdentifier: String {
         pattern.textWithoutTrivia
     }
 }
 
-extension FunctionParameter {
+extension FunctionParameterSyntax {
     var nameIdentifier: String {
-        secondName?.textWithoutTrivia ?? firstName?.textWithoutTrivia ?? ""
+        secondName?.textWithoutTrivia ?? firstName.textWithoutTrivia
     }
     
     init(name: String, type: TypeSyntaxProtocol, isEscaping: Bool = false) {
         var resultType = type
         if isEscaping {
-            resultType = AttributedType(attributes: .escaping, baseType: type)
+            resultType = AttributedTypeSyntax(attributes: .escaping, baseType: type)
         }
         self.init(
-            attributes: nil,
-            modifiers: nil,
+            attributes: [],
+            modifiers: [],
             firstName: .identifier(name),
             secondName: nil,
             colon: .colonToken(trailingTrivia: .space),
-            type: resultType,
-            ellipsis: nil,
-            defaultArgument: nil
+            type: resultType
         )
     }
 }
 
-extension FunctionSignature {
-    func with(parameterClause: ParameterClause) -> Self {
-        FunctionSignature(
-            input: parameterClause,
-            asyncOrReasyncKeyword: asyncOrReasyncKeyword?.withLeadingTrivia(.space).withoutTrailingTrivia(),
-            throwsOrRethrowsKeyword: throwsOrRethrowsKeyword?.withLeadingTrivia(.space).withoutTrailingTrivia(),
-            output: output
+extension FunctionSignatureSyntax {
+    func with(parameterClause: FunctionParameterClauseSyntax) -> Self {
+        let asyncSpecifier = effectSpecifiers?.asyncSpecifier?.with(\.leadingTrivia, "").with(\.trailingTrivia, .space)
+        let throwsSpecifier = effectSpecifiers?.throwsSpecifier?.with(\.leadingTrivia, "").with(\.trailingTrivia, .space)
+        return FunctionSignatureSyntax(
+            parameterClause: parameterClause.with(\.trailingTrivia, .space),
+            effectSpecifiers: .init(asyncSpecifier: asyncSpecifier, throwsSpecifier: throwsSpecifier),
+            returnClause: returnClause
         )
     }
 }
@@ -99,7 +127,7 @@ extension ExprSyntax {
         if let functionCall = self.as(FunctionCallExprSyntax.self) {
             return functionCall
         } else if let tuple = self.as(TupleExprSyntax.self),
-                  let firstElement = tuple.elementList.first,
+                  let firstElement = tuple.elements.first,
                   let functionCall = firstElement.expression.as(FunctionCallExprSyntax.self) {
             return functionCall
         } else {
@@ -108,80 +136,116 @@ extension ExprSyntax {
     }
 }
 
-extension CodeBlockItem {
-    var isAssignment: Bool {
-        sequenceExpr != nil
-    }
-    
-    var sequenceExpr: SequenceExpr? {
-        guard
-            case .expr(let item) = item,
-            let sequenceExpr = item.as(SequenceExpr.self)
-        else {
-            return nil
-        }
-        return sequenceExpr
-    }
-
-    init(name: String) {
-        let memberAccessExpr = MemberAccessExpr(
-            base: IdentifierExpr(identifier: .`self`),
-            dot: .period,
-            name: .identifier(name)
-        )
-        let assignmentExpr = AssignmentExpr(leadingTrivia: .space, trailingTrivia: .space)
-        let identifierExpr = IdentifierExpr(identifier: .identifier(name))
-        let exprList = ExprList {
-            memberAccessExpr
-            assignmentExpr
-            identifierExpr
-        }
-        let sequenceExpr = SequenceExpr(elements: exprList).cast(ExprSyntax.self)
-        self.init(item: .expr(sequenceExpr))
-    }
-    
-    var fromRawInfoOrNew: PositionableCodeBlockItem {
-        PositionableCodeBlockItem(rawItemWithInfo: self) ?? PositionableCodeBlockItem(id: indexInParent, item: self)
+extension FunctionCallExprSyntax {
+    var rootDecl: DeclReferenceExprSyntax? {
+        calledExpression.as(DeclReferenceExprSyntax.self)
     }
 }
 
-extension InitializerDecl {
+extension SubscriptCallExprSyntax {
+    var rootDecl: DeclReferenceExprSyntax? {
+        calledExpression.as(DeclReferenceExprSyntax.self)
+    }
+}
+
+extension MemberAccessExprSyntax {
+    var rootDecl: DeclReferenceExprSyntax? {
+        if let memberAccessExpr = base?.as(MemberAccessExprSyntax.self) {
+            return memberAccessExpr.rootDecl
+        } else if let functionCallExpr = base?.as(FunctionCallExprSyntax.self) {
+            return functionCallExpr.rootDecl
+        } else if let subscriptCallExpr = base?.as(SubscriptCallExprSyntax.self) {
+            return subscriptCallExpr.rootDecl
+        } else if let declReference = base?.as(DeclReferenceExprSyntax.self) {
+            return declReference
+        }
+        return nil
+    }
+}
+
+extension CodeBlockItemSyntax {
+    var isAssignment: Bool {
+        sequenceExprSyntax != nil
+    }
+    
+    var sequenceExprSyntax: SequenceExprSyntax? {
+        guard
+            case .expr(let item) = item,
+            let sequenceExprSyntax = item.as(SequenceExprSyntax.self)
+        else {
+            return nil
+        }
+        return sequenceExprSyntax
+    }
+
+    init(name: String) {
+        let memberAccessExpr = MemberAccessExprSyntax(
+            base: DeclReferenceExprSyntax(baseName: .keyword(.`self`)),
+            declName: DeclReferenceExprSyntax(baseName: .identifier(name))
+        )
+        let assignmentExprSyntax = AssignmentExprSyntax(leadingTrivia: .space, trailingTrivia: .space)
+        let identifierExpr = DeclReferenceExprSyntax(baseName: .identifier(name))
+        let exprList = ExprListSyntax {
+            memberAccessExpr
+            assignmentExprSyntax
+            identifierExpr
+        }
+        let sequenceExprSyntax = SequenceExprSyntax(elements: exprList).cast(ExprSyntax.self)
+        self.init(item: .expr(sequenceExprSyntax))
+    }
+    
+    var fromRawInfoOrNew: PositionableCodeBlockItem {
+        if let item = PositionableCodeBlockItem(rawItemWithInfo: self) {
+            return item
+        } else {
+            guard
+                let list = item.parent?.as(CodeBlockItemListSyntax.self),
+                let index = list.firstIndex(of: self)
+            else {
+                return PositionableCodeBlockItem(id: 0, item: self)
+            }
+            return PositionableCodeBlockItem(id: list.distance(from: list.startIndex, to: index), item: self)
+        }
+    }
+}
+
+extension InitializerDeclSyntax {
     static var empty: Self {
-        InitializerDecl(signature: FunctionSignature(input: ParameterClause(parameterList: [])), bodyBuilder: {})
+        InitializerDeclSyntax(signature: .init(parameterClause: .init(parameters: .init(itemsBuilder: {}))))
     }
     
     var withEmptyContent: Self {
-        let parameterList = signature.input.withParameterList(nil)
+        let parameterList = signature.parameterClause.with(\.parameters, [])
         var result = self
-        result.signature.input = parameterList
-        result.body = result.body?.withStatements(nil)
+        result.signature.parameterClause = parameterList
+        result.body = result.body?.with(\.statements, [])
         return result
     }
     
     func characters(configuration: Configuration) -> Int {
         let initSize: Int
-        if let firstToken {
-            initSize = firstToken.indentation(configuration: configuration) + firstToken.byteSizeAfterTrimmingTrivia
+        if let firstToken = firstToken(viewMode: .sourceAccurate) {
+            initSize = firstToken.indentation(configuration: configuration) + firstToken.trimmedLength.utf8Length
         } else {
             initSize = 0
         }
-        let signatureSize = signature.byteSize
-        let rightBraceSize = body?.rightBrace.byteSize ?? 0
+        let signatureSize = signature.totalLength.utf8Length
+        let rightBraceSize = body?.rightBrace.totalLength.utf8Length ?? 0
         return initSize + signatureSize + rightBraceSize
     }
     
     var containsParameters: Bool {
-        signature.input.parameterList.isEmpty == false
+        signature.parameterClause.parameters.isEmpty == false
     }
     
     var containsBody: Bool {
         body?.statements.isEmpty == false
     }
 
-    func parameter(forName name: String, type: String? = nil) -> FunctionParameter? {
-        signature.input.parameterList.first(where: {
+    func parameter(forName name: String, type: String? = nil) -> FunctionParameterSyntax? {
+        signature.parameterClause.parameters.first(where: {
             if let type {
-                return $0.nameIdentifier == name && $0.type?.unwrappedType.textWithoutTrivia == type
+                return $0.nameIdentifier == name && $0.type.unwrappedType.textWithoutTrivia == type
             } else {
                 return $0.nameIdentifier == name
             }
@@ -189,40 +253,54 @@ extension InitializerDecl {
     }
 }
 
-extension VariableDecl {
+extension FunctionDeclSyntax {
+    func characters(configuration: Configuration) -> Int {
+        let funcSize: Int
+        if let firstToken = firstToken(viewMode: .sourceAccurate) {
+            funcSize = firstToken.indentation(configuration: configuration) + firstToken.trimmedLength.utf8Length
+        } else {
+            funcSize = 0
+        }
+        let signatureSize = signature.totalLength.utf8Length
+        let rightBraceSize = body?.rightBrace.totalLength.utf8Length ?? 0
+        return funcSize + signatureSize + rightBraceSize
+    }
+}
+
+extension VariableDeclSyntax {
     var isSet: Bool {
         !bindings.allSatisfy({ $0.initializer == nil })
     }
     
     var isOptionalVariable: Bool {
-        guard letOrVarKeyword.tokenKind == .varKeyword else {
+        guard bindingSpecifier.tokenKind == .keyword(.var) else {
             return false
         }
         guard let type = bindings.last?.typeAnnotation?.type else {
             return false
         }
-        return type.is(OptionalType.self) || type.is(ImplicitlyUnwrappedOptionalType.self)
+        return type.is(OptionalTypeSyntax.self) || type.is(ImplicitlyUnwrappedOptionalTypeSyntax.self)
     }
     
     var isComputedVariable: Bool {
-        if let accessor = bindings.last?.accessor {
+        if let accessor = bindings.last?.accessorBlock?.accessors {
             switch accessor {
             case .accessors(let accessorBlock):
-                return accessorBlock.accessors.allSatisfy({
-                    $0.accessorKind.textWithoutTrivia != "didSet" && $0.accessorKind.textWithoutTrivia != "willSet"
+                return accessorBlock.allSatisfy({
+                    $0.accessorSpecifier.textWithoutTrivia != "didSet" && $0.accessorSpecifier.textWithoutTrivia != "willSet"
                 })
             case .getter:
                 return true
             }
-        } else if let isLazy = modifiers?.contains(where: { $0.name.textWithoutTrivia == "lazy" }), isLazy {
+        } else if modifiers.contains(where: { $0.name.textWithoutTrivia == "lazy" }) {
             return true
-        } else if let isEnvironment = attributes?.contains(where: {
-            guard case .customAttribute(let attribute) = $0 else {
+        } else if attributes.contains(where: {
+            guard case .`attribute`(let attribute) = $0 else {
                 return false
             }
             let name = attribute.attributeName.textWithoutTrivia
             return name == "EnvironmentObject" || name == "Environment"
-        }), isEnvironment {
+        }) {
             return true
         } else {
             return false
@@ -256,32 +334,76 @@ extension TriviaPiece {
     }
 }
 
-extension CodeBlock {
-    func format(configuration: Configuration, parentIndentation: Int) -> Self {
-        self
-            .withLeadingTrivia(.space)
-            .withoutTrailingTrivia()
-            .withRightBrace(.rightBraceToken(leadingTrivia: .newLinesAndSpaces(spaces: parentIndentation)))
+extension CodeBlockItemListSyntax {
+    func format(indentation: Int) -> Self {
+        var result = self
+        for idx in indices {
+            let codeBlockItem = self[idx]
+            result = result.with(
+                \.[idx],
+                codeBlockItem
+                    .withLeadingNewLines(lines: 1, indentation: indentation)
+                    .withTrailingNewLines(lines: 0, indentation: 0)
+            )
+        }
+        return result
+    }
+    
+    func isLast(item: CodeBlockItemSyntax) -> Bool {
+        index(of: item) == index(before: endIndex)
+    }
+    
+    func isFirst(item: CodeBlockItemSyntax) -> Bool {
+        index(of: item) == startIndex
     }
 }
 
-extension CodeBlockItemList {
-    func format(configuration: Configuration, parentIndentation: Int) -> Self {
-        var result = self
-        for (idx, codeBlockItem) in enumerated() {
-            if !codeBlockItem.isAssignment {
-                let leadingTrivia: [TriviaPiece] = codeBlockItem.leadingTrivia?.pieces ?? TriviaPiece.newLinesAndSpaces(spaces: parentIndentation + configuration.spacesPerTab)
-                result = result.replacing(
-                    childAt: idx,
-                    with: codeBlockItem.withLeadingTrivia(.init(pieces: leadingTrivia)).withoutTrailingTrivia()
+extension CodeBlockSyntax {
+    func format(indentation: Int, childIndentation: Int) -> Self {
+        func commonFormat(node: CodeBlockSyntax, indentation: Int, lines: Int) -> CodeBlockSyntax {
+            node
+                .withLeadingNewLines(lines: 0, indentation: 0)
+                .with(\.trailingTrivia, "")
+                .with(
+                    \.rightBrace,
+                    .rightBraceToken(leadingTrivia: .newLinesAndSpaces(lines: lines, spaces: indentation))
                 )
-            } else {
-                result = result.replacing(
-                    childAt: idx,
-                    with: codeBlockItem.withLeadingTrivia(.newLinesAndSpaces(spaces: parentIndentation + configuration.spacesPerTab)).withoutTrailingTrivia()
-                )
-            }
         }
-        return result
+        guard !statements.isEmpty else {
+            return commonFormat(node: self, indentation: indentation, lines: 2)
+        }
+        return commonFormat(node: self, indentation: indentation, lines: 1)
+            .with(
+                \.statements,
+                 statements.format(indentation: childIndentation)
+            )
+    }
+}
+
+extension MemberBlockItemListSyntax {
+    func isLast(item: MemberBlockItemSyntax) -> Bool {
+        index(of: item) == index(before: endIndex)
+    }
+    
+    func isFirst(item: MemberBlockItemSyntax) -> Bool {
+        index(of: item) == startIndex
+    }
+}
+
+extension MemberBlockSyntax {
+    func format(indentation: Int) -> Self {
+        func commonFormat(node: MemberBlockSyntax, indentation: Int, lines: Int) -> MemberBlockSyntax {
+            node
+                .withLeadingNewLines(lines: 0, indentation: 0)
+                .withTrailingNewLines(lines: 0, indentation: 0)
+                .with(
+                    \.rightBrace,
+                     node.rightBrace.withLeadingNewLines(lines: lines, indentation: indentation)
+                )
+        }
+        guard !members.isEmpty else {
+            return commonFormat(node: self, indentation: indentation, lines: 2)
+        }
+        return commonFormat(node: self, indentation: indentation, lines: 1)
     }
 }

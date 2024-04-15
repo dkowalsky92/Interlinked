@@ -46,12 +46,7 @@ struct ConfigurationView: View {
     
     private var maxLineLengthView: some View {
         HStack(alignment: .center) {
-            HStack(spacing: 8) {
-                Text(Image(systemName: "ruler"))
-                Text("Maximum line length")
-            }
-            .font(Font.system(.body, weight: .regular))
-            .foregroundColor(.primary)
+            imageWithText(image: "ruler", title: "Maximum line length")
             
             Spacer()
             
@@ -81,17 +76,26 @@ struct ConfigurationView: View {
     }
     
     private var enableSortingView: some View {
+        switchRow(image: "arrow.up.and.down.text.horizontal", title: "Enable sorting", binding: $viewModel.enableSorting)
+    }
+    
+    private func imageWithText(image: String, title: String) -> some View {
+        HStack(spacing: 8) {
+            Text(Image(systemName: image))
+                .frame(width: 16)
+            Text(title)
+        }
+        .font(Font.system(.body, weight: .regular))
+        .foregroundColor(.primary)
+    }
+    
+    private func switchRow(image: String, title: String, binding: Binding<Bool>) -> some View {
         HStack(alignment: .center) {
-            HStack(spacing: 8) {
-                Text(Image(systemName: "arrow.up.and.down.text.horizontal"))
-                Text("Enable sorting")
-            }
-            .font(Font.system(.body, weight: .regular))
-            .foregroundColor(.primary)
+            imageWithText(image: image, title: title)
             
             Spacer()
             
-            Toggle(isOn: $viewModel.enableSorting, label: {})
+            Toggle(isOn: binding, label: {})
                 .foregroundColor(.accentColor)
                 .toggleStyle(SwitchToggleStyle())
         }

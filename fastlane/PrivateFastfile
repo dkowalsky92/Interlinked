@@ -94,9 +94,7 @@ private_lane :update_certificates_and_profiles do |options|
   readonly = options[:readonly]
   api_key = lane_context[SharedValues::APP_STORE_CONNECT_API_KEY]
 
-  additionalCertType = if type == BuildType::DEVELOPER_ID
-    AdditionalCertType::DEVELOPER_ID_INSTALLER
-  elsif type == BuildType::APP_STORE
+  additionalCertType = if type == BuildType::APP_STORE
     AdditionalCertType::MAC_INSTALLER_DISTRIBUTION
   else
     nil
@@ -105,8 +103,7 @@ private_lane :update_certificates_and_profiles do |options|
   if type == BuildType::DEVELOPMENT && !useTempKeychain
     register_devices(
       devices: {
-        "MacBook Pro 16 Intel" => "AF0BD1AF-923E-53AD-8036-3FB613296E01",
-        "MacBook Pro 16 M1" => "25B8C53A-6487-5E49-9DCD-B9DC951BAB81",
+        DEVELOPMENT_MAC_NAME => DEVELOPMENT_MAC_ID,
       },
       api_key: api_key,
       platform: "mac"

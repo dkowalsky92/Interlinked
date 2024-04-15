@@ -12,11 +12,11 @@
 			<array>
 				<dict>
 					<key>XCSourceEditorCommandClassName</key>
-					<string>$(PRODUCT_MODULE_NAME).InterlinkCommand</string>
+					<string>$(PRODUCT_MODULE_NAME).SyncCommand</string>
 					<key>XCSourceEditorCommandIdentifier</key>
-					<string>$(PRODUCT_BUNDLE_IDENTIFIER).SourceEditorCommand</string>
+					<string>$(PRODUCT_BUNDLE_IDENTIFIER).SyncCommand</string>
 					<key>XCSourceEditorCommandName</key>
-					<string>Interlink</string>
+					<string>Sync Dependencies</string>
 				</dict>
 			</array>
 			<key>XCSourceEditorExtensionPrincipalClass</key>

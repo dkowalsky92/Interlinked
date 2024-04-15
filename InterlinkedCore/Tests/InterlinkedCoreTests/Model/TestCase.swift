@@ -18,7 +18,7 @@ struct TestCase {
     
     init(
         context: String,
-        configuration: Configuration = .init(spacesPerTab: 4, maxLineLength: 100),
+        configuration: Configuration = .init(),
         input: String,
         expectedOutput: String
     ) {

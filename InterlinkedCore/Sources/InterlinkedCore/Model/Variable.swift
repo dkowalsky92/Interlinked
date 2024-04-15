@@ -10,14 +10,14 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 
 struct Variable: Equatable, Hashable {
-    let binding: PatternBinding
+    let binding: PatternBindingSyntax
     let type: TypeSyntax
     let isSet: Bool
     let isOptional: Bool
     let isComputed: Bool
     
     init(
-        binding: PatternBinding,
+        binding: PatternBindingSyntax,
         type: TypeSyntax,
         isSet: Bool,
         isOptional: Bool,
@@ -31,7 +31,7 @@ struct Variable: Equatable, Hashable {
     }
     
     var isEscaping: Bool {
-        type.is(FunctionType.self)
+        type.is(FunctionTypeSyntax.self)
     }
     
     var isSettable: Bool {
@@ -44,5 +44,13 @@ struct Variable: Equatable, Hashable {
     
     var unwrappedType: TypeSyntax {
         type.unwrappedType
+    }
+    
+    static func == (lhs: Variable, rhs: Variable) -> Bool {
+        lhs.binding.id == rhs.binding.id
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(binding.id)
     }
 }

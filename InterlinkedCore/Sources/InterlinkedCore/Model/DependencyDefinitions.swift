@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftSyntax
 import SwiftSyntaxBuilder
 
 class DependencyDefinitions {
@@ -34,8 +35,8 @@ class DependencyDefinitions {
         self.scope = scopeBuilder.buildScope(fromCodeBlockItems: codeBlockItems)
     }
     
-    var rawItemWithInfoList: CodeBlockItemList {
-        CodeBlockItemList(codeBlockItems.map { $0.rawItemWithInfo })
+    var rawItemWithInfoList: CodeBlockItemListSyntax {
+        CodeBlockItemListSyntax(codeBlockItems.map { $0.rawItemWithInfo })
     }
     
     var lastAssignmentIndex: Int? {

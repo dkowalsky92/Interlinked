@@ -10,161 +10,187 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import InterlinkedShared
 
-protocol ParameterClauseFormatterProtocol {
+protocol FunctionSignatureFormatterProtocol {
     func format(
-        parameterClause: ParameterClause,
+        signature: FunctionSignatureSyntax,
         configuration: Configuration,
         shouldIndent: Bool,
         parentIndentation: Int
-    ) -> ParameterClause
+    ) -> FunctionSignatureSyntax
 }
 
-class GoogleStyleParameterClauseFormatter: ParameterClauseFormatterProtocol {
+class GoogleStyleParameterClauseFormatter: FunctionSignatureFormatterProtocol {
     func format(
-        parameterClause: ParameterClause,
+        signature: FunctionSignatureSyntax,
         configuration: Configuration,
         shouldIndent: Bool,
         parentIndentation: Int
-    ) -> ParameterClause {
+    ) -> FunctionSignatureSyntax {
         let parameterList = format(
-            parameterList: parameterClause.parameterList,
+            parameterList: signature.parameterClause.parameters,
             shouldIndent: shouldIndent,
             spacesPerTab: configuration.spacesPerTab,
             parentIndentation: parentIndentation
         )
-        let parameterClause = ParameterClause(
-            leftParen: parameterClause.leftParen,
-            rightParen: parameterClause.rightParen,
-            parameterListBuilder: {
-                parameterList
-            }
+        var parameterClause = FunctionParameterClauseSyntax(
+            leftParen: signature.parameterClause.leftParen,
+            parameters: parameterList,
+            rightParen: signature.parameterClause.rightParen
         )
-        return format(parameterClause: parameterClause, shouldIndent: shouldIndent, parentIndentation: parentIndentation)
+        parameterClause = format(parameterClause: parameterClause, shouldIndent: shouldIndent, parentIndentation: parentIndentation)
+        return signature.with(parameterClause: parameterClause)
     }
-    
+
     private func format(
-        parameterList: FunctionParameterList,
+        parameterList: FunctionParameterListSyntax,
         shouldIndent: Bool,
         spacesPerTab: Int,
         parentIndentation: Int
-    ) -> FunctionParameterList {
+    ) -> FunctionParameterListSyntax {
         var result = parameterList
-        for (idx, parameter) in parameterList.enumerated() {
-            result = result.replacing(
-                childAt: idx,
-                with: parameter
-                    .withLeadingTrivia(shouldIndent ? .newLinesAndSpaces(spaces: parentIndentation + spacesPerTab) : (idx == 0 ? .zero : .space))
-                    .withoutTrailingTrivia()
-                    .withTrailingComma(idx == parameterList.count - 1 ? nil : .comma)
-            )
+        for idx in parameterList.indices {
+            let parameter = parameterList[idx]
+            let updatedParameter = parameter
+                .with(
+                    \.leadingTrivia,
+                     (shouldIndent ?
+                        .newLinesAndSpaces(spaces: parentIndentation + spacesPerTab) :
+                        (idx == parameterList.startIndex ? "" : .space)
+                     )
+                )
+                .withTrailingNewLines(lines: 0, indentation: 0)
+                .with(\.trailingComma, (idx == parameterList.index(before: parameterList.endIndex) ? nil : .commaToken()))
+            result = result.with(\.[idx], updatedParameter)
         }
         return result
     }
     
-    private func format(parameterClause: ParameterClause, shouldIndent: Bool, parentIndentation: Int) -> ParameterClause {
+    private func format(parameterClause: FunctionParameterClauseSyntax, shouldIndent: Bool, parentIndentation: Int) -> FunctionParameterClauseSyntax {
         parameterClause
-            .withoutLeadingTrivia()
-            .withoutTrailingTrivia()
-            .withRightParen(.rightParenToken(leadingTrivia: shouldIndent ? .newLinesAndSpaces(spaces: parentIndentation) : .zero))
+            .withLeadingNewLines(lines: 0, indentation: 0)
+            .withTrailingNewLines(lines: 0, indentation: 0)
+            .with(\.rightParen, .rightParenToken(leadingTrivia: shouldIndent ? .newLinesAndSpaces(spaces: parentIndentation) : ""))
     }
 }
 
-class AirBnbStyleParameterClauseFormatter: ParameterClauseFormatterProtocol {
+class AirBnbStyleParameterClauseFormatter: FunctionSignatureFormatterProtocol {
     func format(
-        parameterClause: ParameterClause,
+        signature: FunctionSignatureSyntax,
         configuration: Configuration,
         shouldIndent: Bool,
         parentIndentation: Int
-    ) -> ParameterClause {
+    ) -> FunctionSignatureSyntax {
+        guard 
+            let declaration = signature.parent,
+            let startToken = declaration.firstToken(viewMode: .sourceAccurate),
+            let targetToken = signature.firstToken(viewMode: .sourceAccurate)
+        else {
+            return signature
+        }
+        let indentation = startToken.characters(until: targetToken.id) - 1
         let parameterList = format(
-            parameterList: parameterClause.parameterList,
+            parameterList: signature.parameterClause.parameters,
             shouldIndent: shouldIndent,
             spacesPerTab: configuration.spacesPerTab,
-            parentIndentation: parentIndentation
+            indentation: indentation
         )
-        let parameterClause = ParameterClause(
-            leftParen: parameterClause.leftParen,
-            rightParen: parameterClause.rightParen,
-            parameterListBuilder: {
-                parameterList
-            }
+        var parameterClause = FunctionParameterClauseSyntax(
+            leftParen: signature.parameterClause.leftParen,
+            parameters: parameterList,
+            rightParen: signature.parameterClause.rightParen
         )
-        return format(parameterClause: parameterClause, shouldIndent: shouldIndent, parentIndentation: parentIndentation)
+        parameterClause = format(parameterClause: parameterClause, shouldIndent: shouldIndent)
+        return signature.with(parameterClause: parameterClause)
     }
     
     private func format(
-        parameterList: FunctionParameterList,
+        parameterList: FunctionParameterListSyntax,
         shouldIndent: Bool,
         spacesPerTab: Int,
-        parentIndentation: Int
-    ) -> FunctionParameterList {
+        indentation: Int
+    ) -> FunctionParameterListSyntax {
         var result = parameterList
-        for (idx, parameter) in parameterList.enumerated() {
-            result = result.replacing(
-                childAt: idx,
-                with: parameter
-                    .withLeadingTrivia(shouldIndent ? .newLinesAndSpaces(spaces: parentIndentation + spacesPerTab) : (idx == 0 ? .zero : .space))
-                    .withoutTrailingTrivia()
-                    .withTrailingComma(idx == parameterList.count - 1 ? nil : .comma)
-            )
+        for idx in parameterList.indices {
+            let parameter = parameterList[idx]
+            let isFirst = idx == parameterList.startIndex
+            let updatedParameter = parameter
+                .with(
+                    \.leadingTrivia,
+                     (shouldIndent ? (isFirst ? "" : .newLinesAndSpaces(spaces: indentation)) : (isFirst ? "" : .space))
+                )
+                .withTrailingNewLines(lines: 0, indentation: 0)
+                .with(\.trailingComma, idx == parameterList.index(before: parameterList.endIndex) ? nil : .commaToken())
+            
+            result = result.with(\.[idx], updatedParameter)
         }
         return result
     }
     
-    private func format(parameterClause: ParameterClause, shouldIndent: Bool, parentIndentation: Int) -> ParameterClause {
+    private func format(parameterClause: FunctionParameterClauseSyntax, shouldIndent: Bool) -> FunctionParameterClauseSyntax {
         parameterClause
-            .withoutLeadingTrivia()
-            .withoutTrailingTrivia()
-            .withRightParen(.rightParen)
+            .withLeadingNewLines(lines: 0, indentation: 0)
+            .withTrailingNewLines(lines: 0, indentation: 0)
+            .with(\.rightParen, .rightParenToken())
     }
 }
 
-class LinkedInStyleParameterClauseFormatter: ParameterClauseFormatterProtocol {
+class LinkedInStyleParameterClauseFormatter: FunctionSignatureFormatterProtocol {
     func format(
-        parameterClause: ParameterClause,
+        signature: FunctionSignatureSyntax,
         configuration: Configuration,
         shouldIndent: Bool,
         parentIndentation: Int
-    ) -> ParameterClause {
+    ) -> FunctionSignatureSyntax {
+        guard
+            let declaration = signature.parent,
+            let startToken = declaration.firstToken(viewMode: .sourceAccurate),
+            let targetToken = signature.firstToken(viewMode: .sourceAccurate)
+        else {
+            return signature
+        }
+        let indentation = startToken.characters(until: targetToken.id) - 2
         let parameterList = format(
-            parameterList: parameterClause.parameterList,
+            parameterList: signature.parameterClause.parameters,
             shouldIndent: shouldIndent,
             spacesPerTab: configuration.spacesPerTab,
-            parentIndentation: parentIndentation
+            indentation: indentation
         )
-        let parameterClause = ParameterClause(
-            leftParen: parameterClause.leftParen,
-            rightParen: parameterClause.rightParen,
-            parameterListBuilder: {
-                parameterList
-            }
+        var parameterClause = FunctionParameterClauseSyntax(
+            leftParen: signature.parameterClause.leftParen,
+            parameters: parameterList,
+            rightParen: signature.parameterClause.rightParen
         )
-        return format(parameterClause: parameterClause, shouldIndent: shouldIndent, parentIndentation: parentIndentation)
+        parameterClause = format(parameterClause: parameterClause, shouldIndent: shouldIndent, parentIndentation: parentIndentation)
+        return signature.with(parameterClause: parameterClause)
     }
     
     private func format(
-        parameterList: FunctionParameterList,
+        parameterList: FunctionParameterListSyntax,
         shouldIndent: Bool,
         spacesPerTab: Int,
-        parentIndentation: Int
-    ) -> FunctionParameterList {
+        indentation: Int
+    ) -> FunctionParameterListSyntax {
         var result = parameterList
-        for (idx, parameter) in parameterList.enumerated() {
-            result = result.replacing(
-                childAt: idx,
-                with: parameter
-                    .withLeadingTrivia(idx == 0 ? .zero : (shouldIndent ? .newLinesAndSpaces(spaces: parentIndentation + spacesPerTab + 1) : .space))
-                    .withoutTrailingTrivia()
-                    .withTrailingComma(idx == parameterList.count - 1 ? nil : .comma)
-            )
+        for idx in parameterList.indices {
+            let parameter = parameterList[idx]
+            let isFirst = idx == parameterList.startIndex
+            let updatedParameter = parameter
+                .with(
+                    \.leadingTrivia,
+                     (shouldIndent ? (.newLinesAndSpaces(spaces: indentation)) : (isFirst ? "" : .space))
+                )
+                .withTrailingNewLines(lines: 0, indentation: 0)
+                .with(\.trailingComma, idx == parameterList.index(before: parameterList.endIndex) ? nil : .commaToken())
+            
+            result = result.with(\.[idx], updatedParameter)
         }
         return result
     }
     
-    private func format(parameterClause: ParameterClause, shouldIndent: Bool, parentIndentation: Int) -> ParameterClause {
+    private func format(parameterClause: FunctionParameterClauseSyntax, shouldIndent: Bool, parentIndentation: Int) -> FunctionParameterClauseSyntax {
         parameterClause
-            .withoutLeadingTrivia()
-            .withoutTrailingTrivia()
-            .withRightParen(.rightParen)
+            .withLeadingNewLines(lines: 0, indentation: 0)
+            .withTrailingNewLines(lines: 0, indentation: 0)
+            .with(\.rightParen, .rightParenToken())
     }
 }

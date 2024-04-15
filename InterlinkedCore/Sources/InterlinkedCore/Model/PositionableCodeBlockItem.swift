@@ -10,16 +10,16 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 
 struct PositionableCodeBlockItem: Hashable, Identifiable {
-    private let item: CodeBlockItem
+    private let item: CodeBlockItemSyntax
     
     let id: Int
     
-    init(id: Int, item: CodeBlockItem) {
+    init(id: Int, item: CodeBlockItemSyntax) {
         self.id = id
         self.item = item
     }
     
-    init?(rawItemWithInfo: CodeBlockItem) {
+    init?(rawItemWithInfo: CodeBlockItemSyntax) {
         guard
             let unexpectedBeforeItem = rawItemWithInfo.unexpectedBeforeItem,
             let token = unexpectedBeforeItem.first?.as(TokenSyntax.self),
@@ -28,17 +28,15 @@ struct PositionableCodeBlockItem: Hashable, Identifiable {
             return nil
         }
         self.id = id
-        self.item = rawItemWithInfo.withUnexpectedBeforeItem(nil)
+        self.item = rawItemWithInfo.with(\.unexpectedBeforeItem, nil)
     }
     
-    var originalItem: CodeBlockItem {
-        item.withUnexpectedBeforeItem(nil)
+    var originalItem: CodeBlockItemSyntax {
+        item.with(\.unexpectedBeforeItem, nil)
     }
     
-    var rawItemWithInfo: CodeBlockItem {
-        item.withUnexpectedBeforeItem(
-            .init(itemsBuilder: { TokenSyntax.identifier("\(id)") })
-        )
+    var rawItemWithInfo: CodeBlockItemSyntax {
+        item.with(\.unexpectedBeforeItem, .init(itemsBuilder: { TokenSyntax.identifier("\(id)") }))
     }
     
     var vertex: Vertex {

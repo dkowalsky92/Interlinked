@@ -134,13 +134,11 @@ platform :mac do
   lane :provision_all_profiles_and_certificates do
     update_certificates_and_profiles(type: BuildType::DEVELOPMENT, readonly: false, useTempKeychain: false)
     update_certificates_and_profiles(type: BuildType::APP_STORE, readonly: false, useTempKeychain: false)
-    update_certificates_and_profiles(type: BuildType::DEVELOPER_ID, readonly: false, useTempKeychain: false)
   end
 
   desc "Nuke all profiles & certificates"
   lane :nuke_all_profiles_and_certificates do
     match_nuke(type: BuildType::DEVELOPMENT, platform: "macos")
     match_nuke(type: BuildType::APP_STORE, platform: "macos")
-    match_nuke(type: BuildType::DEVELOPER_ID, platform: "macos")
   end
 end

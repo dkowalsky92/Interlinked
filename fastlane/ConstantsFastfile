@@ -1,6 +1,8 @@
 
 TEMP_KEYCHAIN_USER = ENV["TEMP_KEYCHAIN_USER"]
 TEMP_KEYCHAIN_PASSWORD = ENV["TEMP_KEYCHAIN_PASSWORD"]
+DEVELOPMENT_MAC_NAME = ENV["DEVELOPMENT_MAC_NAME"]
+DEVELOPMENT_MAC_ID = ENV["DEVELOPMENT_MAC_ID"]
 
 module AppId
   INTERLINKED_UI = "com.dkowalsky92.InterlinkedUI"
@@ -32,13 +34,11 @@ end
 
 module AdditionalCertType
   MAC_INSTALLER_DISTRIBUTION = "mac_installer_distribution"
-  DEVELOPER_ID_INSTALLER = "developer_id_installer"
 end
 
 module BuildType
   DEVELOPMENT = "development"
   APP_STORE = "appstore"
-  DEVELOPER_ID = "developer_id"
 
   def self.configuration_for_type(type)
     case type
@@ -46,8 +46,6 @@ module BuildType
       return Configuration::DEBUG
     when BuildType::APP_STORE
       return Configuration::RELEASE
-    when BuildType::DEVELOPER_ID
-      return Configuration::DEVELOPER_ID
     else
       UI.user_error!("Unexpected type: #{type}")
     end
@@ -59,8 +57,6 @@ module BuildType
       return ExportMethod::DEVELOPMENT
     when BuildType::APP_STORE
       return ExportMethod::APP_STORE
-    when BuildType::DEVELOPER_ID
-      return ExportMethod::DEVELOPER_ID
     else
       UI.user_error!("Unexpected type: #{type}")
     end
@@ -70,11 +66,9 @@ end
 module Configuration
   DEBUG = "Debug"
   RELEASE = "Release"
-  DEVELOPER_ID = "DeveloperId"
 end
 
 module ExportMethod
   DEVELOPMENT = "development"
   APP_STORE = "app-store"
-  DEVELOPER_ID = "developer-id"
 end

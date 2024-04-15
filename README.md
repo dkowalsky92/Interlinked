@@ -1,8 +1,12 @@
-<p align="center">
-  <img src="./Assets/logo.png" />
-</p>
-
 ![Core Framework Status](https://github.com/dkowalsky92/Interlinked/actions/workflows/build-and-test.yml/badge.svg)
+
+<div align="center">
+  <img src="./Assets/logo.png" />
+  <br><br>
+  <a href="https://apps.apple.com/pl/app/interlinked/id6464111295?mt=12">
+      <img src="./Assets/appstore.svg" alt="Download on the App Store">
+  </a>
+</div>
 
 # Interlinked
 
@@ -41,6 +45,7 @@ Interlinked is an Xcode Source Extension that automatically keeps your initializ
 ## Limitations
 
 - Interlinked does not currently support *Decodable* initializers. This is a planned feature for a future release.
+- Interlinked may not work correctly with most SwiftUI attributes, such as `@State`, `@Binding`, `@EnvironmentObject`, etc. This is a planned feature for a future release.
 - Interlinked attempts to maintain application logic, but it is not a seer and may not always generate the code you expect. Please review the generated code before committing it to your project.
 - There may be bugs. Please report any issues you encounter.
 

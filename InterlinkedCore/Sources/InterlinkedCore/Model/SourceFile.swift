@@ -7,5 +7,6 @@
 
 import Foundation
 import SwiftSyntax
+import SwiftParser
 
 public typealias SourceFile = SourceFileSyntax
