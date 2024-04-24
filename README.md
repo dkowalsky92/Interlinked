@@ -27,7 +27,7 @@ Interlinked is an Xcode Source Extension that automatically keeps your initializ
 - **Parameter Injection and Assignments**: Seamlessly injects parameters and their respective assignments.
   
 - **Smart Parameter Removal**: Automatically removes parameters and their assignments that don't correspond to any stored variable in the class/struct/actor.
-  
+ 
 - **Intelligent Property Handling**: Distinguishes which properties are settable, ensuring computed properties are left untouched.
   
 - **Initializer Scope Awareness**: Recognizes values defined within the initializer's scope, even accommodating scenarios where a single locally-defined value might set multiple stored variables.
@@ -40,12 +40,15 @@ Interlinked is an Xcode Source Extension that automatically keeps your initializ
 
 - **Formatting Flexibility**: Offers three distinct formatting options for the initializer. Also provides an automatic line break feature when the line length exceeds a user-defined limit.
 
+- **SwiftUI Attributes Handling**: Recognizes SwiftUI attributes and ensures they are correctly assigned in the initializer.
+ 
+- **Code Block Selection**: Allows users to select a block of code and generate an initializer based on the selected class/struct/actor.
+
 - **... And More!**: Continual improvements and features are in the works, ensuring the tool stays relevant and powerful.
 
 ## Limitations
 
 - Interlinked does not currently support *Decodable* initializers. This is a planned feature for a future release.
-- Interlinked may not work correctly with most SwiftUI attributes, such as `@State`, `@Binding`, `@EnvironmentObject`, etc. This is a planned feature for a future release.
 - Interlinked attempts to maintain application logic, but it is not a seer and may not always generate the code you expect. Please review the generated code before committing it to your project.
 - There may be bugs. Please report any issues you encounter.
 
