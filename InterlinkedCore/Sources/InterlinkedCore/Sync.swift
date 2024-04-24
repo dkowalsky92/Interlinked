@@ -74,12 +74,12 @@ public class Sync {
     }
     
     public func sync(input: String) throws -> String {
-        let sourceFile = try sourceParser.parse(source: input)
-        var updated = dependencySyntaxRewriter.visit(sourceFile)
+        let content = try sourceParser.parse(source: input)
+        var updatedContent = dependencySyntaxRewriter.visit(content)
         if let err = dependencySyntaxRewriter.error {
             throw err
         }
-        updated = formattingRewriter.visit(updated)
-        return updated.description
+        updatedContent = formattingRewriter.visit(updatedContent)
+        return updatedContent.description
     }
 }

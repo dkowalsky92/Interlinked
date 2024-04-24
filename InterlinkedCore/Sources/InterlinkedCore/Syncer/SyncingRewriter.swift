@@ -23,6 +23,7 @@ class SyncingRewriter: SyntaxRewriter {
     private let filterInitializerRecognizer: [InitializerRecognizer]
     private let decodableInitializerRecognizer: InitializerRecognizer
     
+    private var formattingStack: Stack<SyntaxIdentifier> = Stack()
     var error: Error?
     
     init(
@@ -51,6 +52,7 @@ class SyncingRewriter: SyntaxRewriter {
     
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
         do {
+            formattingStack.push(node.id)
             let memberDeclBlock = try withUpdatedMemberBlock(node.memberBlock)
             return super.visit(node.with(\.memberBlock, memberDeclBlock))
         } catch {
@@ -61,6 +63,7 @@ class SyncingRewriter: SyntaxRewriter {
 
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
         do {
+            formattingStack.push(node.id)
             let memberDeclBlock = try withUpdatedMemberBlock(node.memberBlock)
             return super.visit(node.with(\.memberBlock, memberDeclBlock))
         } catch {
@@ -71,6 +74,7 @@ class SyncingRewriter: SyntaxRewriter {
     
     override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
         do {
+            formattingStack.push(node.id)
             let memberDeclBlock = try withUpdatedMemberBlock(node.memberBlock)
             return super.visit(node.with(\.memberBlock, memberDeclBlock))
         } catch {
@@ -79,7 +83,16 @@ class SyncingRewriter: SyntaxRewriter {
         }
     }
     
+    override func visitPost(_ node: Syntax) {
+        if node.is(ClassDeclSyntax.self) || node.is(StructDeclSyntax.self) || node.is(ActorDeclSyntax.self) {
+            formattingStack.pop()
+        }
+    }
+    
     private func withUpdatedMemberBlock(_ memberBlock: MemberBlockSyntax) throws -> MemberBlockSyntax {
+        guard formattingStack.count > 0 else {
+            return memberBlock
+        }
         var result = memberBlock
         let cache = buildInitializerCache(members: memberBlock.members)
         var initializerCache = cache.0

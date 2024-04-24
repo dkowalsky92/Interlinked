@@ -41,6 +41,10 @@ struct AssignmentInfo: Hashable {
         }
     }
     
+    var rawAssignee: String {
+        assignee.first == "_" ? String(assignee.dropFirst()) : assignee
+    }
+    
     var rootAssignerIdentifier: String {
         if
             let memberAccessExpr = assigner.first?.as(MemberAccessExprSyntax.self),

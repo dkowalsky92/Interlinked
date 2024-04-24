@@ -86,7 +86,7 @@ class Scope: CustomDebugStringConvertible {
         return contains { scope  in
             declarations = declarations.union(scope.declarations.map { $0.identifier })
             let selfAssignmentCheck = scope.assignments.first(where: {
-                $0.info.assignee == identifier && $0.info.assigner.textWithoutTrivia == identifier
+                $0.info.rawAssignee == identifier && $0.info.assigner.textWithoutTrivia == identifier
             })
             return selfAssignmentCheck != nil && !declarations.contains(identifier)
         }
@@ -116,9 +116,9 @@ class Scope: CustomDebugStringConvertible {
         var declarations = Set<Declaration>()
         return first { scope -> Assignment? in
             declarations = declarations.union(scope.declarations)
-            let selfAssignmentCheck = scope.assignments.first(where: { $0.info.assignee == identifier && $0.info.isInstance })
+            let selfAssignmentCheck = scope.assignments.first(where: { $0.info.rawAssignee == identifier && $0.info.isInstance })
             let directAssignmentCheck = scope.assignments.first(where: { `assignment` in
-                `assignment`.info.assignee == identifier && !`assignment`.info.isInstance && !declarations.contains(where: { delcaration in
+                `assignment`.info.rawAssignee == identifier && !`assignment`.info.isInstance && !declarations.contains(where: { delcaration in
                     delcaration.identifier == identifier && delcaration.type == .variable
                 })
             })
@@ -128,7 +128,7 @@ class Scope: CustomDebugStringConvertible {
     
     func directAssignment(forIdentifier identifier: String) -> Assignment? {
         first { scope -> Assignment? in
-            scope.assignments.first(where: { $0.info.assignee == identifier && !$0.info.isInstance })
+            scope.assignments.first(where: { $0.info.rawAssignee == identifier && !$0.info.isInstance })
         }
     }
     

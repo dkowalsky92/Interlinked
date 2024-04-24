@@ -94,18 +94,14 @@ extension FunctionParameterSyntax {
         secondName?.textWithoutTrivia ?? firstName.textWithoutTrivia
     }
     
-    init(name: String, type: TypeSyntaxProtocol, isEscaping: Bool = false) {
-        var resultType = type
-        if isEscaping {
-            resultType = AttributedTypeSyntax(attributes: .escaping, baseType: type)
-        }
+    init(name: String, type: TypeSyntaxProtocol) {
         self.init(
             attributes: [],
             modifiers: [],
             firstName: .identifier(name),
             secondName: nil,
             colon: .colonToken(trailingTrivia: .space),
-            type: resultType
+            type: type
         )
     }
 }
@@ -178,13 +174,13 @@ extension CodeBlockItemSyntax {
         return sequenceExprSyntax
     }
 
-    init(name: String) {
+    init(assignee: String, assigner: String) {
         let memberAccessExpr = MemberAccessExprSyntax(
             base: DeclReferenceExprSyntax(baseName: .keyword(.`self`)),
-            declName: DeclReferenceExprSyntax(baseName: .identifier(name))
+            declName: DeclReferenceExprSyntax(baseName: .identifier(assignee))
         )
         let assignmentExprSyntax = AssignmentExprSyntax(leadingTrivia: .space, trailingTrivia: .space)
-        let identifierExpr = DeclReferenceExprSyntax(baseName: .identifier(name))
+        let identifierExpr = DeclReferenceExprSyntax(baseName: .identifier(assigner))
         let exprList = ExprListSyntax {
             memberAccessExpr
             assignmentExprSyntax
@@ -299,7 +295,7 @@ extension VariableDeclSyntax {
                 return false
             }
             let name = attribute.attributeName.textWithoutTrivia
-            return name == "EnvironmentObject" || name == "Environment"
+            return name == "EnvironmentObject" || name == "StateObject" || name == "Environment" || name == "Query"
         }) {
             return true
         } else {

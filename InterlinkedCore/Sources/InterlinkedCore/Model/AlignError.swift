@@ -9,6 +9,7 @@ import Foundation
 
 public enum InterlinkError: Error {
     case userDefaultsNotFound
+    case multipleSelectionUnsupported
     case malformedStructure
     case unsupportedInitializerFormat(String)
     
@@ -28,6 +29,15 @@ public enum InterlinkError: Error {
                 NSLocalizedDescriptionKey:  NSLocalizedString(
                     "",
                     value: "Interlinking couldn't be performed. The file structure is malformed.",
+                    comment: ""
+                ),
+            ]
+            return NSError(domain: "", code: 42, userInfo: userInfo)
+        case .multipleSelectionUnsupported:
+            let userInfo: [String: Any] = [
+                NSLocalizedDescriptionKey:  NSLocalizedString(
+                    "",
+                    value: "Interlinking couldn't be performed. Multi-cursor selections are not yet supported, select each code block individually.",
                     comment: ""
                 ),
             ]

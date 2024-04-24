@@ -12,15 +12,40 @@ import InterlinkedShared
 
 class FormattingRewriter: SyntaxRewriter {
     private let configuration: Configuration
-    private var indentations: [SyntaxIdentifier: Int] = [:]
     private let signatureFormatter: FunctionSignatureFormatterProtocol
+    private var indentations: [SyntaxIdentifier: Int] = [:]
+    private var formattingStack: Stack<SyntaxIdentifier> = Stack()
     
     init(configuration: Configuration, signatureFormatter: FunctionSignatureFormatterProtocol) {
         self.configuration = configuration
         self.signatureFormatter = signatureFormatter
     }
+    
+    override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+        formattingStack.push(node.id)
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+        formattingStack.push(node.id)
+        return super.visit(node)
+    }
+
+    override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
+        formattingStack.push(node.id)
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: Syntax) {
+        if node.is(ClassDeclSyntax.self) || node.is(StructDeclSyntax.self) || node.is(ActorDeclSyntax.self) {
+            formattingStack.pop()
+        }
+    }
 
     override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
+        guard formattingStack.count > 0 else {
+            return super.visit(node)
+        }
         let indentations = indentations(node: node)
         let parentIndentation = indentations.0
         let childIndentation = indentations.1
@@ -36,8 +61,11 @@ class FormattingRewriter: SyntaxRewriter {
             .with(\.body, node.body?.format(indentation: parentIndentation, childIndentation: childIndentation))
         return super.visit(result)
     }
-    
+
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+        guard formattingStack.count > 0 else {
+            return super.visit(node)
+        }
         let indentations = indentations(node: node)
         let parentIndentation = indentations.0
         let childIndentation = indentations.1
@@ -53,9 +81,10 @@ class FormattingRewriter: SyntaxRewriter {
             .with(\.body, node.body?.format(indentation: parentIndentation, childIndentation: childIndentation))
         return super.visit(result)
     }
-    
+
     override func visit(_ node: MemberBlockItemSyntax) -> MemberBlockItemSyntax {
         guard
+            formattingStack.count > 0,
             node.decl.is(FunctionDeclSyntax.self) || node.decl.is(InitializerDeclSyntax.self),
             shouldChangeTrivia(node: node),
             let list = node.parent?.as(MemberBlockItemListSyntax.self)
@@ -68,12 +97,15 @@ class FormattingRewriter: SyntaxRewriter {
             .withTrailingNewLines(lines: 0, indentation: 0)
         return super.visit(result)
     }
-    
+
     override func visit(_ node: MemberBlockSyntax) -> MemberBlockSyntax {
+        guard formattingStack.count > 0 else {
+            return super.visit(node)
+        }
         let indentation = (node.parent?.firstToken(viewMode: .sourceAccurate)?.indentation(configuration: configuration) ?? 0)
         return super.visit(node.format(indentation: indentation))
     }
-    
+
     private func shouldChangeTrivia(node: SyntaxProtocol) -> Bool {
         guard
             let declaration = node.parent?.parent?.parent
@@ -104,7 +136,7 @@ class FormattingRewriter: SyntaxRewriter {
             return (0, 0)
         }
     }
-    
+
     private func memberBlockParent(node: SyntaxProtocol) -> (MemberBlockItemSyntax, MemberBlockItemListSyntax)? {
         guard
             let memberBlockItem = node.parent?.as(MemberBlockItemSyntax.self),
@@ -114,7 +146,7 @@ class FormattingRewriter: SyntaxRewriter {
         }
         return (memberBlockItem, memberBlockList)
     }
-    
+
     private func codeBlockParent(node: SyntaxProtocol) -> (CodeBlockItemSyntax, CodeBlockItemListSyntax)? {
         guard
             let codeBlockItem = node.parent?.as(CodeBlockItemSyntax.self),

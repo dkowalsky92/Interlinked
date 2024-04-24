@@ -27,6 +27,33 @@ final class FormatSpec: XCTestCase {
                 """
             ),
             .init(
+                context: "has one function defined at root with incorrect formatting",
+                input: """
+
+
+
+                func test(value: String, value2: String) {
+                
+                
+                
+                }
+
+
+                """,
+                expectedOutput: """
+
+
+
+                func test(value: String, value2: String) {
+                
+                
+                
+                }
+
+
+                """
+            ),
+            .init(
                 context: "has three functions defined in declaration, incorrect formatting",
                 input: """
                 struct Test {

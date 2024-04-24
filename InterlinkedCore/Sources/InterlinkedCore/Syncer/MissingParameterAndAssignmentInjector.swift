@@ -33,7 +33,7 @@ class MissingParameterAndAssignmentInjector {
                 continue
             }
             if parameter != nil {
-                definitions.insertCodeBlockItem(codeBlockItem: makeAssignment(forVariable: variable))
+                definitions.insertCodeBlockItem(codeBlockItem: variable.assignment)
             } else if let assignment {
                 var containsDeclaration = false
                 let previousItemIndex = assignment.rootItemId - 1
@@ -41,15 +41,15 @@ class MissingParameterAndAssignmentInjector {
                     let previousItemsScope = scopeBuilder.buildScope(fromCodeBlockItems: definitions.codeBlockItems.dropLast(definitions.codeBlockItems.count - assignment.rootItemId))
                     containsDeclaration = previousItemsScope.containsDeclaration(forIdentifier: variable.name, type: .variable)
                 }
-                if assignment.info.assignee == assignment.info.assigner.description && !containsDeclaration {
-                    definitions.insertParameter(parameter: makeParameter(forVariable: variable))
+                if assignment.info.rawAssignee == assignment.info.assigner.description && !containsDeclaration {
+                    definitions.insertParameter(parameter: variable.parameter)
                 }
             } else {
                 guard !variable.isOptional && !variable.isSet else {
                     continue
                 }
-                definitions.insertParameter(parameter: makeParameter(forVariable: variable))
-                definitions.insertCodeBlockItem(codeBlockItem: makeAssignment(forVariable: variable))
+                definitions.insertParameter(parameter: variable.parameter)
+                definitions.insertCodeBlockItem(codeBlockItem: variable.assignment)
             }
         }
  
@@ -63,19 +63,5 @@ class MissingParameterAndAssignmentInjector {
         parameters.first(where: {
             variable.binding.nameIdentifier == $0.parameter.nameIdentifier && variable.unwrappedType.textWithoutTrivia == $0.unwrappedType.textWithoutTrivia
         })
-    }
-    
-    private func makeParameter(forVariable variable: Variable) -> PositionableParameter {
-        PositionableParameter(
-            id: 0,
-            parameter: FunctionParameterSyntax(name: variable.name, type: variable.type, isEscaping: variable.isEscaping)
-        )
-    }
-    
-    private func makeAssignment(forVariable variable: Variable) -> PositionableCodeBlockItem {
-        PositionableCodeBlockItem(
-            id: 0,
-            item: CodeBlockItemSyntax(name: variable.binding.nameIdentifier)
-        )
     }
 }

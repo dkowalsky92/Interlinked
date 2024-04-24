@@ -66,15 +66,15 @@ class UnusedAssignmentRemover: SyntaxRewriter {
         list: CodeBlockItemListSyntax
     ) -> Bool {
         if let sequence = expression.as(SequenceExprSyntax.self), let assignmentInfo = AssignmentInfo(sequenceExpr: sequence) {
-            guard definitions.scope.directAssignment(forIdentifier: assignmentInfo.assignee) == nil else {
+            guard definitions.scope.directAssignment(forIdentifier: assignmentInfo.rawAssignee) == nil else {
                 return false
             }
-            let assignment = definitions.scope.instanceAssignment(forIdentifier: assignmentInfo.assignee)
+            let assignment = definitions.scope.instanceAssignment(forIdentifier: assignmentInfo.rawAssignee)
             let containsVariableForAssignment = variables.contains {
                 guard $0.isSettable else {
                     return false
                 }
-                return assignment?.info.assignee == $0.name
+                return assignment?.info.rawAssignee == $0.name
             }
             return containsVariableForAssignment == false
         }

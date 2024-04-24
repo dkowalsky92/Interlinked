@@ -1701,6 +1701,180 @@ final class SyncSpec: XCTestCase {
         }
     }
     
+    func testSwiftUIAttributes() {
+        let testCases: [TestCase] = [
+            .init(
+                context: "has Binding variables",
+                input: """
+                struct Test: View {
+                    @Binding var value: String
+
+                    var body: some View {
+                        EmptyView()
+                    }
+                }
+                """,
+                expectedOutput: """
+                struct Test: View {
+                    @Binding var value: String
+
+                    var body: some View {
+                        EmptyView()
+                    }
+
+                    init(value: Binding<String>) {
+                        self._value = value
+                    }
+                }
+                """
+            ),
+            .init(
+                context: "has StateObject variables",
+                input: """
+                struct Test: View {
+                    @StateObject var value: ViewModel
+
+                    var body: some View {
+                        EmptyView()
+                    }
+                }
+                """,
+                expectedOutput: """
+                struct Test: View {
+                    @StateObject var value: ViewModel
+
+                    var body: some View {
+                        EmptyView()
+                    }
+                }
+                """
+            ),
+            .init(
+                context: "has Query variables",
+                input: """
+                struct Test: View {
+                    @Query var value: ViewModel
+
+                    var body: some View {
+                        EmptyView()
+                    }
+                }
+                """,
+                expectedOutput: """
+                struct Test: View {
+                    @Query var value: ViewModel
+
+                    var body: some View {
+                        EmptyView()
+                    }
+                }
+                """
+            ),
+            .init(
+                context: "has ObservedObject variables",
+                input: """
+                struct Test: View {
+                    @ObservedObject var value: ViewModel
+
+                    var body: some View {
+                        EmptyView()
+                    }
+                }
+                """,
+                expectedOutput: """
+                struct Test: View {
+                    @ObservedObject var value: ViewModel
+
+                    var body: some View {
+                        EmptyView()
+                    }
+
+                    init(value: ViewModel) {
+                        self.value = value
+                    }
+                }
+                """
+            ),
+            .init(
+                context: "has State variables",
+                input: """
+                struct Test: View {
+                    @State var value: String
+
+                    var body: some View {
+                        EmptyView()
+                    }
+                }
+                """,
+                expectedOutput: """
+                struct Test: View {
+                    @State var value: String
+
+                    var body: some View {
+                        EmptyView()
+                    }
+
+                    init(value: String) {
+                        self.value = value
+                    }
+                }
+                """
+            ),
+            .init(
+                context: "has EnvironmentObject variables",
+                input: """
+                struct Test: View {
+                    @EnvironmentObject var value: ViewModel
+
+                    var body: some View {
+                        EmptyView()
+                    }
+                }
+                """,
+                expectedOutput: """
+                struct Test: View {
+                    @EnvironmentObject var value: ViewModel
+
+                    var body: some View {
+                        EmptyView()
+                    }
+                }
+                """
+            ),
+            .init(
+                context: "has Environment variables",
+                input: """
+                struct Test: View {
+                    @Environment var value: ViewModel
+
+                    var body: some View {
+                        EmptyView()
+                    }
+                }
+                """,
+                expectedOutput: """
+                struct Test: View {
+                    @Environment var value: ViewModel
+
+                    var body: some View {
+                        EmptyView()
+                    }
+                }
+                """
+            ),
+        ]
+        
+        for testCase in testCases {
+            let sut = Sync(configuration: testCase.configuration)
+            do {
+                let output = try sut.sync(input: testCase.input)
+                XCTAssertEqual(output, testCase.expectedOutput, testCase.context)
+            } catch {
+                XCTFail(error.localizedDescription)
+            }
+        }
+    }
+    
     func testAirbnbParameterFormatter() {
         let testCases: [TestCase] = [
             .init(

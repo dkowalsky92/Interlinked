@@ -48,6 +48,7 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = ""
       selectedLauncherIdentifier = "Xcode.IDEFoundation.Launcher.PosixSpawn"
+      debugAsWhichUser = "root"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
       ignoresPersistentStateOnLaunch = "NO"
@@ -57,7 +58,7 @@
       <PathRunnable
          runnableDebuggingMode = "0"
          BundleIdentifier = "com.apple.dt.Xcode"
-         FilePath = "/Applications/Xcode15.app">
+         FilePath = "/Applications/Xcode.app">
       </PathRunnable>
       <MacroExpansion>
          <BuildableReference

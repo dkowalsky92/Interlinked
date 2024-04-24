@@ -32,7 +32,7 @@ public class Format {
     }
     
     public func format(input: String) throws -> String {
-        let sourceFile = try sourceParser.parse(source: input)
-        return formattingRewriter.visit(sourceFile).description
+        let content = try sourceParser.parse(source: input)
+        return formattingRewriter.visit(content).description
     }
 }

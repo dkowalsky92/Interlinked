@@ -20,9 +20,10 @@ class DependencyCollector {
         for declaration in declarations {
             let bindings = declaration.bindings
             let type = bindings.last?.typeAnnotation?.type ?? Constants.defaultType
-            
+            let attributes = declaration.attributes.compactMap { $0 }
             for binding in bindings {
                 let variable = Variable(
+                    attributes: attributes,
                     binding: binding,
                     type: type,
                     isSet: declaration.isSet,
